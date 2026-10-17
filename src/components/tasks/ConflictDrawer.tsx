@@ -14,7 +14,9 @@ export function ConflictDrawer() {
   return (
     <Drawer title={property?.name ?? "Cleaning"} onClose={closePanels}>
       {open && !conflict.hostResolved ? (
-        <DecisionPanel taskId={task.id} onLater={closePanels} />
+        <div className="flex h-full min-h-0 flex-col">
+          <DecisionPanel taskId={task.id} onLater={closePanels} conflictChatFill />
+        </div>
       ) : (
         <div className="space-y-3">
           <p className="text-sm text-muted">Resolved</p>

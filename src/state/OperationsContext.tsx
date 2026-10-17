@@ -30,6 +30,7 @@ import { ApiError, authToken, clearAuthToken, request, setAuthToken } from "../s
 
 interface OperationsContextValue {
   ready: boolean;
+  workspaceLoading: boolean;
   host: HostProfile | null;
   onboardingComplete: boolean;
   planApproved: boolean;
@@ -76,6 +77,7 @@ function message(error: unknown) {
 
 export function OperationsProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);
+  const [workspaceLoading, setWorkspaceLoading] = useState(false);
   const [host, setHost] = useState<HostProfile | null>(null);
   const [onboardingComplete, setOnboardingComplete] = useState(false);
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
@@ -126,7 +128,14 @@ export function OperationsProvider({ children }: { children: ReactNode }) {
         const profile = { name: me.name, email: me.email };
         const complete = me.onboarding_completed_at != null;
         applyHost(profile, complete);
-        if (complete) await reload(profile);
+        if (complete) {
+          setWorkspaceLoading(true);
+          try {
+            await reload(profile);
+          } finally {
+            setWorkspaceLoading(false);
+          }
+        }
       })
       .catch(() => {
         clearAuthToken();
@@ -157,6 +166,7 @@ export function OperationsProvider({ children }: { children: ReactNode }) {
 
   const value: OperationsContextValue = {
     ready,
+    workspaceLoading,
     host,
     onboardingComplete,
     planApproved: Boolean(workspace?.settings.planApprovedAt),
@@ -181,7 +191,14 @@ export function OperationsProvider({ children }: { children: ReactNode }) {
       const profile = { name: result.host.name, email: result.host.email };
       const complete = result.host.onboarding_completed_at != null;
       applyHost(profile, complete);
-      if (complete) await reload(profile);
+      if (complete) {
+        setWorkspaceLoading(true);
+        try {
+          await reload(profile);
+        } finally {
+          setWorkspaceLoading(false);
+        }
+      }
       else applyWorkspace(null);
       setNotice(null);
     },
@@ -189,6 +206,7 @@ export function OperationsProvider({ children }: { children: ReactNode }) {
       clearAuthToken();
       applyHost(null, false);
       applyWorkspace(null);
+      setWorkspaceLoading(false);
       setNotice(null);
       setSelectedTaskId(null);
       setSelectedConflictId(null);

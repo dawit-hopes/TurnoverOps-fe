@@ -31,6 +31,14 @@ export interface ScheduleDecision {
   managerAlert: ManagerAlert | null;
 }
 
+export interface ConflictChatResult {
+  reply: string;
+  action: "message" | "proposed" | "assigned";
+  confirmation_token?: string | null;
+  cleaner_id?: string | null;
+  cleaner_name?: string | null;
+}
+
 export interface CleanerRejectionDetails {
   can_decline: boolean;
   title: string;
@@ -334,6 +342,13 @@ export async function evaluateTask(taskId: string): Promise<ScheduleDecision> {
     body: JSON.stringify({ task_id: taskId }),
   });
   return { candidates: decision.candidates, managerAlert: decision.manager_alert };
+}
+
+export function sendConflictChat(taskId: string, message: string, confirmationToken?: string) {
+  return request<ConflictChatResult>(`/tasks/${taskId}/conflict-chat`, {
+    method: "POST",
+    body: JSON.stringify({ message, confirmation_token: confirmationToken ?? null }),
+  });
 }
 
 export function getCleanerRejection(token: string) {

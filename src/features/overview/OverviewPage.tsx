@@ -162,7 +162,6 @@ function PlanningPanel({ onFinished }: { onFinished: () => Promise<void> }) {
         setLastSuccessful(current.last_successful);
         if (current.run?.status === "running") {
           setStarted(true);
-          setOpen(true);
           setStageCount(stageIndex(current.run.stage) + 1);
         }
       })

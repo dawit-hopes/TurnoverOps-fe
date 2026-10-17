@@ -15,26 +15,39 @@ import { TasksPage } from "../features/tasks/TasksPage";
 import { useOps } from "../state/OperationsContext";
 
 function Loading() {
-  return <div className="grid min-h-screen place-items-center text-sm text-muted">Loading workspace…</div>;
+  return (
+    <main className="grid min-h-screen place-items-center bg-canvas px-4">
+      <div className="w-full max-w-sm rounded-xl border border-line bg-white p-6 text-center shadow-sm" role="status" aria-live="polite">
+        <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-accent-soft border-t-accent" aria-hidden="true" />
+        <p className="mt-4 text-sm font-medium text-ink">Loading your workspace</p>
+        <p className="mt-1 text-xs text-muted">Getting your properties, cleanings, and schedule ready.</p>
+        <div className="mt-5 h-1.5 overflow-hidden rounded-full bg-accent-soft" aria-hidden="true">
+          <div className="h-full w-1/3 animate-[progress_1.4s_ease-in-out_infinite] rounded-full bg-accent" />
+        </div>
+      </div>
+    </main>
+  );
 }
 
 function HomeRedirect() {
-  const { ready, host, onboardingComplete, planApproved } = useOps();
+  const { ready, host, onboardingComplete, workspaceLoading } = useOps();
   if (!ready) return <Loading />;
   if (!host) return <Navigate to="/sign-in" replace />;
-  if (!onboardingComplete || !planApproved) return <Navigate to="/onboarding" replace />;
+  if (workspaceLoading) return <Loading />;
+  if (!onboardingComplete) return <Navigate to="/onboarding" replace />;
   return <Navigate to="/overview" replace />;
 }
 
 export function App() {
-  const { ready, host, onboardingComplete, planApproved, openTask } = useOps();
+  const { ready, host, onboardingComplete, workspaceLoading, openTask } = useOps();
   const location = useLocation();
   const taskId = new URLSearchParams(location.search).get("task");
   useEffect(() => {
     if (taskId) openTask(taskId);
   }, [taskId, openTask]);
   if (!ready) return <Loading />;
-  const dashboardReady = onboardingComplete && planApproved;
+  if (workspaceLoading) return <Loading />;
+  const dashboardReady = onboardingComplete;
 
   return (
     <Routes>

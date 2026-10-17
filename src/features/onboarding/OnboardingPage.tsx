@@ -76,7 +76,7 @@ function TimeField({ label, value, onChange }: { label: string; value: string; o
 
 export function OnboardingPage() {
   const navigate = useNavigate();
-  const { host, onboardingComplete, finishOnboarding, confirmConfiguration, approvePlan, signOut } = useOps();
+  const { host, onboardingComplete, planApproved, finishOnboarding, confirmConfiguration, approvePlan, signOut } = useOps();
   const [step, setStep] = useState(0);
   const [properties, setProperties] = useState<Property[]>([blankProperty()]);
   const [cleaners, setCleaners] = useState<Cleaner[]>([blankCleaner()]);
@@ -88,8 +88,12 @@ export function OnboardingPage() {
 
   useEffect(() => {
     if (!onboardingComplete) return;
+    if (planApproved) {
+      navigate("/overview", { replace: true });
+      return;
+    }
     setStep((current) => (current < 3 ? 3 : current));
-  }, [onboardingComplete]);
+  }, [onboardingComplete, planApproved, navigate]);
 
   async function continueToCleaners() {
     const nextErrors: Record<string, string> = {};

@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { situationSentence } from "../../domain/decisionCopy";
 import { addDaysKey, formatDay, formatDuration, formatTime, todayKey, zonedDateKey, zonedIso } from "../../domain/format";
 import type { CleaningTask } from "../../domain/types";
-import { previewWindow, type ManagerAlert, type ScheduleCandidate } from "../../services/apiOperations";
+import { previewWindow, sendConflictChat, type ManagerAlert, type ScheduleCandidate } from "../../services/apiOperations";
 import { useOps } from "../../state/OperationsContext";
 import { Button } from "../ui/Button";
 import { Dialog } from "../ui/Drawer";
@@ -10,8 +10,8 @@ import { Field } from "../ui/Field";
 
 type Candidate = ScheduleCandidate;
 
-export function DecisionPanel({ taskId, onLater }: { taskId: string; onLater: () => void }) {
-  const { workspace, evaluateTask, assignCleaner, saveCleaningWindow, retryCleanerEmail } = useOps();
+export function DecisionPanel({ taskId, onLater, conflictChatFill = false }: { taskId: string; onLater: () => void; conflictChatFill?: boolean }) {
+  const { workspace, evaluateTask, assignCleaner, saveCleaningWindow, retryCleanerEmail, refreshWorkspace } = useOps();
   const task = workspace?.tasks.find((item) => item.id === taskId);
   const [candidates, setCandidates] = useState<Candidate[] | null>(null);
   const [alert, setAlert] = useState<ManagerAlert | null>(null);
@@ -19,6 +19,16 @@ export function DecisionPanel({ taskId, onLater }: { taskId: string; onLater: ()
   const [editing, setEditing] = useState(false);
   const [busyId, setBusyId] = useState("");
   const [feedback, setFeedback] = useState<{ tone: "ok" | "error"; text: string } | null>(null);
+  const [chatMessages, setChatMessages] = useState<{ role: "manager" | "agent"; text: string; error?: boolean }[]>([]);
+  const [chatDraft, setChatDraft] = useState("");
+  const [chatBusy, setChatBusy] = useState(false);
+  const [pendingConfirmation, setPendingConfirmation] = useState<{ token: string; message: string; cleanerName: string } | null>(null);
+
+  useEffect(() => {
+    setChatMessages([]);
+    setChatDraft("");
+    setPendingConfirmation(null);
+  }, [taskId]);
 
   useEffect(() => {
     if (!task) return;
@@ -55,9 +65,41 @@ export function DecisionPanel({ taskId, onLater }: { taskId: string; onLater: ()
   const savedText = feedback?.tone === "ok" ? savedSentence(task, cleaner?.name) : feedback?.text;
   const email = emailLabel(alert?.email_status ?? task.emailStatus);
   const notified = Boolean(alert?.manager_notified || task.managerNotified);
+  const showChat = !settled || chatMessages.length > 0;
+
+  const sendChat = async (message: string, visibleMessage: string, confirmationToken?: string) => {
+    setChatMessages((current) => [...current, { role: "manager", text: visibleMessage }]);
+    setChatBusy(true);
+    try {
+      const result = await sendConflictChat(task.id, message, confirmationToken);
+      setChatMessages((current) => [...current, { role: "agent", text: result.reply }]);
+      if (result.action === "proposed" && result.confirmation_token) {
+        setPendingConfirmation({ token: result.confirmation_token, message, cleanerName: result.cleaner_name || "the proposed cleaner" });
+      } else {
+        setPendingConfirmation(null);
+      }
+      if (result.action === "assigned") await refreshWorkspace();
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : "The assistant could not process that request.";
+      const reply = detail.includes("429") || detail.toLowerCase().includes("rate")
+        ? "The assistant is busy right now. Please wait a moment and try again. No assignment was changed."
+        : `${detail} No assignment was changed.`;
+      setChatMessages((current) => [...current, { role: "agent", text: reply, error: true }]);
+    } finally {
+      setChatBusy(false);
+    }
+  };
+
+  const submitChat = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const message = chatDraft.trim();
+    if (!message || chatBusy) return;
+    setChatDraft("");
+    void sendChat(message, message);
+  };
 
   return (
-    <div className="space-y-8">
+    <div className={`space-y-8 ${conflictChatFill ? "flex min-h-0 flex-1 flex-col" : ""}`}>
       <header className="space-y-3">
         <p className="text-sm text-muted">{property?.name}</p>
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
@@ -173,6 +215,74 @@ export function DecisionPanel({ taskId, onLater }: { taskId: string; onLater: ()
         </section>
       )}
 
+      {showChat ? (
+        <section className={`max-w-xl overflow-hidden rounded-xl border border-line bg-white shadow-sm ${conflictChatFill ? "flex min-h-0 flex-1 flex-col" : ""}`} aria-label="Conflict assistant">
+          <header className="border-b border-line bg-zinc-50 px-4 py-3">
+            <h4 className="text-sm font-semibold">Resolve with the assistant</h4>
+            <p className="mt-1 text-xs leading-5 text-muted">
+              {property?.name || "This property"} <span aria-hidden="true">·</span> Deadline {deadlineLabel(task.deadline, timeZone)}
+            </p>
+            <p className="mt-1 text-xs leading-5 text-muted">{situation}</p>
+          </header>
+          <div className={`min-h-28 space-y-3 overflow-y-auto bg-canvas/50 p-4 ${conflictChatFill ? "flex-1" : "max-h-56"}`} aria-live="polite" aria-relevant="additions text">
+            {chatMessages.length ? chatMessages.map((item, index) => (
+              <div key={`${item.role}-${index}`} className={`flex ${item.role === "manager" ? "justify-end" : "justify-start"}`}>
+                <div className={`max-w-[88%] rounded-2xl px-3.5 py-2.5 text-sm leading-5 shadow-sm ${item.role === "manager" ? "rounded-br-md bg-accent text-white" : item.error ? "rounded-bl-md border border-danger/30 bg-danger-soft text-ink" : "rounded-bl-md border border-line bg-white text-ink"}`}>
+                  <span className={`mb-1 block text-[11px] font-semibold ${item.role === "manager" ? "text-white/75" : item.error ? "text-danger" : "text-muted"}`}>{item.role === "manager" ? "You" : "TurnoverOps"}</span>
+                  {item.text}
+                </div>
+              </div>
+            )) : (
+              <div className="rounded-xl border border-dashed border-line bg-white px-4 py-3 text-sm text-muted">
+                Tell me what you’d like to try. For example, “Find another available cleaner” or “Why can’t this be assigned?”
+              </div>
+            )}
+            {chatBusy ? (
+              <div className="flex justify-start">
+                <p className="rounded-2xl rounded-bl-md border border-line bg-white px-3.5 py-2.5 text-sm text-muted shadow-sm">Checking the schedule…</p>
+              </div>
+            ) : null}
+          </div>
+          {pendingConfirmation ? (
+            <div className="border-t border-line bg-warning-soft/40 px-4 py-3">
+              <p className="mb-2 text-xs text-ink">This change needs your confirmation.</p>
+              <Button
+                variant="secondary"
+                disabled={chatBusy}
+                onClick={() => {
+                  const pending = pendingConfirmation;
+                  void sendChat(pending.message, `Confirm reassignment to ${pending.cleanerName}`, pending.token);
+                }}
+              >
+                Confirm reassignment
+              </Button>
+            </div>
+          ) : null}
+          <form className="flex items-end gap-2 border-t border-line bg-white p-3" onSubmit={submitChat}>
+            <textarea
+              value={chatDraft}
+              onChange={(event) => setChatDraft(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {
+                  event.preventDefault();
+                  if (chatDraft.trim() && !chatBusy) {
+                    setChatDraft("");
+                    void sendChat(chatDraft.trim(), chatDraft.trim());
+                  }
+                }
+              }}
+              rows={1}
+              maxLength={1000}
+              disabled={chatBusy}
+              aria-label="Message the conflict assistant"
+              placeholder="Write a message…"
+              className="min-h-10 flex-1 resize-y rounded-xl border border-line bg-canvas px-3 py-2.5 text-sm text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/30"
+            />
+            <Button type="submit" disabled={chatBusy || !chatDraft.trim()}>{chatBusy ? "Sending…" : "Send"}</Button>
+          </form>
+        </section>
+      ) : null}
+
       {editing ? (
         <ScheduleEditor
           task={task}
@@ -187,31 +297,6 @@ export function DecisionPanel({ taskId, onLater }: { taskId: string; onLater: ()
         />
       ) : null}
 
-      <details className="max-w-xl border-t border-line pt-4">
-        <summary className="cursor-pointer text-sm text-muted">Technical details</summary>
-        <div className="mt-3 space-y-3 text-sm text-muted">
-          {conflict?.detail ? <p>{conflict.detail}</p> : <p>No diagnostic summary was stored for this task.</p>}
-          {conflict && conflict.exclusions.length > 0 ? (
-            <ul className="space-y-1">
-              {conflict.exclusions.map((item) => (
-                <li key={item.cleanerId}>
-                  {workspace.cleaners.find((cleanerItem) => cleanerItem.id === item.cleanerId)?.name ?? "Cleaner"}: {item.reason}
-                </li>
-              ))}
-            </ul>
-          ) : null}
-          {conflict && conflict.timeline.length > 0 ? (
-            <ol className="space-y-2">
-              {conflict.timeline.map((event) => (
-                <li key={event.id}>
-                  {event.summary}
-                  <span className="mt-0.5 block text-xs">{formatDay(event.at, timeZone)} {formatTime(event.at, timeZone)}</span>
-                </li>
-              ))}
-            </ol>
-          ) : null}
-        </div>
-      </details>
     </div>
   );
 }
