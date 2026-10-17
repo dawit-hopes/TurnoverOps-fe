@@ -26,7 +26,7 @@ export function TaskDrawer() {
     <Drawer title={property?.name ?? "Cleaning task"} onClose={closePanels}>
       <div className="space-y-5">
         <StatusBadge status={task.status} />
-        <dl className="grid grid-cols-2 gap-3 text-sm">
+        <dl className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
           <Info label="Guest" value={reservation?.guestName ?? "—"} />
           <Info label="Cleaning" value={formatDuration(task.durationMinutes)} />
           <Info label="Deadline" value={formatDateTime(task.deadline, timeZone)} />

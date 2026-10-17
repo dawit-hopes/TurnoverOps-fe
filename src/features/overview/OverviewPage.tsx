@@ -28,8 +28,15 @@ export function OverviewPage() {
   return (
     <div className="space-y-8">
       <section className="grid grid-cols-2 overflow-hidden rounded-lg border border-line bg-white md:grid-cols-4">
-        {metrics.map((metric) => (
-          <div key={metric.label} className="border-b border-line px-4 py-3 md:border-b-0 md:border-r md:last:border-r-0">
+        {metrics.map((metric, index) => (
+          <div
+            key={metric.label}
+            className={`border-b border-line px-4 py-3 ${
+              index % 2 === 0 ? "border-r" : ""
+            } md:border-b-0 md:border-r md:last:border-r-0 ${
+              index >= 2 ? "border-b-0" : ""
+            }`}
+          >
             <p className="text-xs text-muted">{metric.label}</p>
             <p className="mt-1 text-lg font-semibold tabular-nums">{metric.value}</p>
           </div>
@@ -54,6 +61,7 @@ export function OverviewPage() {
                 <Button
                   size="sm"
                   variant="secondary"
+                  className="w-full sm:w-auto"
                   onClick={() => {
                     if (item.conflictId) openConflict(item.conflictId);
                     else if (item.taskId) openTask(item.taskId);
@@ -110,10 +118,15 @@ export function OverviewPage() {
             <ul className="divide-y divide-line md:hidden">
               {todayTasks.map((task) => (
                 <li key={task.id}>
-                  <button type="button" className="w-full px-4 py-3 text-left" onClick={() => openTask(task.id)}>
-                    <span className="block text-sm font-medium">{workspace.properties.find((property) => property.id === task.propertyId)?.name}</span>
-                    <span className="mt-1 block text-xs text-muted">{formatTime(task.windowStart, timeZone)}–{formatTime(task.windowEnd, timeZone)} · {workspace.cleaners.find((cleaner) => cleaner.id === task.cleanerId)?.name ?? "Unassigned"}</span>
-                    <span className="mt-2 block"><StatusBadge status={task.status} /></span>
+                  <button type="button" className="w-full px-4 py-3 text-left hover:bg-zinc-50" onClick={() => openTask(task.id)}>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-sm font-medium">{workspace.properties.find((property) => property.id === task.propertyId)?.name}</span>
+                      <StatusBadge status={task.status} />
+                    </div>
+                    <div className="mt-1 flex flex-wrap items-center justify-between gap-1 text-xs text-muted">
+                      <span>{formatTime(task.windowStart, timeZone)}–{formatTime(task.windowEnd, timeZone)} · {workspace.cleaners.find((cleaner) => cleaner.id === task.cleanerId)?.name ?? "Unassigned"}</span>
+                      <ConfirmationText value={task.confirmation} />
+                    </div>
                   </button>
                 </li>
               ))}
@@ -246,7 +259,7 @@ function PlanningPanel({ onFinished }: { onFinished: () => Promise<void> }) {
 
   return (
     <section className="rounded-lg border border-line bg-white p-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
         <div>
           <h2 className="text-sm font-semibold">Today's assignments</h2>
           <p className="mt-1 text-sm text-muted">
@@ -255,7 +268,7 @@ function PlanningPanel({ onFinished }: { onFinished: () => Promise<void> }) {
               : "No successful plan yet."}
           </p>
         </div>
-        <Button onClick={() => void generate()} disabled={active}>
+        <Button className="w-full sm:w-auto" onClick={() => void generate()} disabled={active}>
           {active ? "Generating…" : "Generate Today's Assignments"}
         </Button>
       </div>
@@ -316,7 +329,7 @@ function ChatBubble({ from, kind = "done", children }: { from: "you" | "assistan
             ? "border-accent bg-white text-ink"
             : "border-line bg-white text-ink";
   return (
-    <div className={mine ? "ml-10 flex justify-end" : "mr-10"}>
+    <div className={mine ? "ml-4 flex justify-end sm:ml-10" : "mr-4 sm:mr-10"}>
       <div className={`max-w-xl rounded-lg border px-3 py-2 text-sm ${mine ? "border-accent bg-accent text-white" : tone}`}>
         <p className={`mb-1 text-[11px] font-medium ${mine ? "text-white/80" : "text-muted"}`}>{mine ? "You" : "TurnoverOps"}</p>
         <div className="space-y-1">{children}</div>
@@ -343,14 +356,17 @@ function WeekStrip() {
 
   return (
     <section>
-      <h2 className="text-sm font-semibold">Upcoming turnovers</h2>
-      <div className="mt-3 grid gap-3 md:grid-cols-4 xl:grid-cols-7">
+      <div className="flex items-baseline justify-between">
+        <h2 className="text-sm font-semibold">Upcoming turnovers</h2>
+        <span className="text-xs text-muted sm:hidden">Swipe for week →</span>
+      </div>
+      <div className="mt-3 flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory sm:grid sm:grid-cols-2 sm:overflow-visible md:grid-cols-4 xl:grid-cols-7">
         {days.map((day) => {
           const tasks = workspace.tasks.filter((task) => zonedDateKey(task.windowStart, timeZone) === day);
           const checkouts = workspace.reservations.filter((reservation) => zonedDateKey(reservation.checkoutAt, timeZone) === day);
           const checkins = workspace.reservations.filter((reservation) => zonedDateKey(reservation.checkInAt, timeZone) === day);
           return (
-            <article key={day} className="rounded-lg border border-line bg-white p-3">
+            <article key={day} className="min-w-[16rem] shrink-0 snap-start rounded-lg border border-line bg-white p-3 sm:min-w-0 sm:shrink">
               <h3 className="text-xs font-medium">{formatDayKey(day, timeZone)}{day === days[0] ? " · Today" : ""}</h3>
               {tasks.length + checkouts.length === 0 ? <p className="mt-3 text-xs text-muted">No turnovers</p> : null}
               <ul className="mt-2 space-y-2">

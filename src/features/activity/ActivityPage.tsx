@@ -34,7 +34,7 @@ export function ActivityPage() {
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted">This log is stored by the API. Host actions and assignment changes appear here after they are saved.</p>
-      <div className="grid gap-2 md:grid-cols-5">
+      <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
         <SelectInput aria-label="Property" value={propertyId} onChange={(event) => setPropertyId(event.target.value)}>
           <option value="">All properties</option>
           {workspace.properties.map((property) => <option key={property.id} value={property.id}>{property.name}</option>)}
@@ -43,7 +43,7 @@ export function ActivityPage() {
           <option value="">All cleaners</option>
           {workspace.cleaners.map((cleaner) => <option key={cleaner.id} value={cleaner.id}>{cleaner.name}</option>)}
         </SelectInput>
-        <input type="date" aria-label="Date" value={date} onChange={(event) => setDate(event.target.value)} className="rounded-md border border-line px-3 py-2 text-sm" />
+        <input type="date" aria-label="Date" value={date} onChange={(event) => setDate(event.target.value)} className="w-full rounded-md border border-line bg-white px-3 py-2 text-sm" />
         <SelectInput aria-label="Event type" value={type} onChange={(event) => setType(event.target.value)}>
           <option value="">All events</option>
           {(Object.keys(ACTIVITY_TYPE_LABEL) as ActivityType[]).map((item) => <option key={item} value={item}>{ACTIVITY_TYPE_LABEL[item]}</option>)}
@@ -54,17 +54,17 @@ export function ActivityPage() {
         </SelectInput>
       </div>
       {events.length === 0 ? (
-        <p className="rounded-lg border border-line bg-white px-4 py-8 text-sm text-muted">No events match these filters.</p>
+        <p className="rounded-lg border border-line bg-white px-4 py-8 text-center text-sm text-muted">No events match these filters.</p>
       ) : (
         <ul className="divide-y divide-line overflow-hidden rounded-lg border border-line bg-white">
           {events.map((item) => (
             <li key={item.id} className="px-4 py-3">
-              <button type="button" className="flex w-full items-start justify-between gap-3 text-left" onClick={() => setOpenId(openId === item.id ? null : item.id)} aria-expanded={openId === item.id}>
-                <span>
+              <button type="button" className="flex w-full flex-col justify-between gap-2 text-left sm:flex-row sm:items-start sm:gap-3 cursor-pointer" onClick={() => setOpenId(openId === item.id ? null : item.id)} aria-expanded={openId === item.id}>
+                <span className="min-w-0 flex-1">
                   <span className="block text-sm font-medium">{clientSentence(item.title, "Schedule update")}</span>
                   <span className="mt-1 block text-xs text-muted">{formatDateTime(item.at, workspace.settings.timeZone)}{item.reason && item.reason !== item.title ? ` · ${clientSentence(item.reason, "")}` : ""}</span>
                 </span>
-                <span className="flex shrink-0 items-center gap-2">
+                <span className="flex shrink-0 items-center gap-2 self-start sm:self-auto">
                   {item.source === "simulated" ? <span className="text-xs text-muted">Simulated</span> : null}
                   {item.source === "host" ? <span className="text-xs text-muted">Host</span> : null}
                   <OutcomeBadge outcome={item.outcome} />

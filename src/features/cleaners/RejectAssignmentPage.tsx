@@ -43,16 +43,16 @@ export function RejectAssignmentPage() {
 
   const timezone = details?.timezone || "UTC";
   return (
-    <main className="grid min-h-screen place-items-center bg-canvas px-4 py-10 text-ink">
-      <section className="w-full max-w-lg space-y-6 rounded-xl border border-line bg-white p-6 shadow-sm sm:p-8">
+    <main className="grid min-h-screen place-items-center bg-canvas px-3 py-6 sm:px-4 sm:py-10 text-ink">
+      <section className="w-full max-w-lg space-y-5 rounded-xl border border-line bg-white p-5 shadow-sm sm:space-y-6 sm:p-8">
         <div className="space-y-2">
           <p className="text-sm font-medium text-muted">TurnoverOps · Cleaner response</p>
-          <h1 className="text-2xl font-semibold tracking-tight">{result?.title || details?.title || (loading ? "Checking this job…" : "Could not open this job")}</h1>
+          <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">{result?.title || details?.title || (loading ? "Checking this job…" : "Could not open this job")}</h1>
           <p className="text-sm leading-6 text-muted">{result?.detail || details?.detail || error}</p>
         </div>
 
         {details?.property_name && details.scheduled_start && details.scheduled_end ? (
-          <dl className="space-y-3 rounded-lg bg-zinc-50 p-4 text-sm">
+          <dl className="space-y-3 rounded-lg bg-zinc-50 p-3.5 sm:p-4 text-sm">
             <div>
               <dt className="text-muted">Property</dt>
               <dd className="mt-0.5 font-medium">{details.property_name}</dd>
@@ -70,7 +70,7 @@ export function RejectAssignmentPage() {
 
         {details?.can_decline && !result ? (
           <div className="space-y-3">
-            <Button disabled={busy || loading} onClick={() => void decline()}>
+            <Button className="w-full sm:w-auto" disabled={busy || loading} onClick={() => void decline()}>
               {busy ? "Recording response…" : "Reject this job"}
             </Button>
             <p className="text-xs leading-5 text-muted">The job remains assigned unless you choose to reject it. TurnoverOps will look for another available cleaner after you submit.</p>

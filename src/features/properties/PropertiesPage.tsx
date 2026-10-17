@@ -21,7 +21,7 @@ export function PropertiesPage() {
   return (
     <div className="space-y-4">
       <div className="flex justify-end">
-        <Button onClick={() => setEditing("new")}>Add property</Button>
+        <Button className="w-full sm:w-auto" onClick={() => setEditing("new")}>Add property</Button>
       </div>
       <div className="space-y-3">
         {workspace.properties.map((property) => {
@@ -64,7 +64,7 @@ export function PropertiesPage() {
                 </div>
               </dl>
               {nextTask ? (
-                <button type="button" className="mt-3 text-sm text-accent" onClick={() => openTask(nextTask.id)}>
+                <button type="button" className="mt-3 text-sm text-accent cursor-pointer text-left" onClick={() => openTask(nextTask.id)}>
                   Next cleaning {formatDay(nextTask.windowStart, timeZone)} {formatTime(nextTask.windowStart, timeZone)} <StatusBadge status={nextTask.status} />
                 </button>
               ) : (
@@ -72,12 +72,12 @@ export function PropertiesPage() {
               )}
               {property.calendarState === "connected" && property.icalUrl ? <p className="mt-2 text-xs text-muted">Calendar feed synced. The full URL stays hidden.</p> : null}
               {warnings.length > 0 ? <ul className="mt-3 list-disc pl-5 text-sm text-danger">{warnings.map((warning) => <li key={warning}>{warning}</li>)}</ul> : null}
-              <div className="mt-4 flex flex-wrap gap-2">
-                <Button size="sm" variant="secondary" onClick={() => setEditing(property)}>Edit property</Button>
-                <Button size="sm" variant="secondary" disabled={property.calendarState === "syncing"} onClick={() => void retrySync(property.id)}>
+              <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                <Button size="sm" variant="secondary" className="w-full sm:w-auto" onClick={() => setEditing(property)}>Edit property</Button>
+                <Button size="sm" variant="secondary" className="w-full sm:w-auto" disabled={property.calendarState === "syncing"} onClick={() => void retrySync(property.id)}>
                   {property.calendarState === "syncing" ? "Syncing" : "Retry sync"}
                 </Button>
-                <Button size="sm" variant="danger" onClick={() => setRemoving(property)}>Remove</Button>
+                <Button size="sm" variant="danger" className="w-full sm:w-auto" onClick={() => setRemoving(property)}>Remove</Button>
               </div>
             </article>
           );
@@ -96,9 +96,9 @@ export function PropertiesPage() {
       {removing ? (
         <Dialog title="Remove property" onClose={() => setRemoving(null)}>
           <p className="text-sm">Remove {removing.name} and its reservations and cleaning tasks?</p>
-          <div className="mt-4 flex justify-end gap-2">
-            <Button variant="secondary" onClick={() => setRemoving(null)}>Cancel</Button>
-            <Button variant="danger" onClick={() => { removeProperty(removing.id); setRemoving(null); }}>Remove property</Button>
+          <div className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            <Button className="w-full sm:w-auto" variant="secondary" onClick={() => setRemoving(null)}>Cancel</Button>
+            <Button className="w-full sm:w-auto" variant="danger" onClick={() => { removeProperty(removing.id); setRemoving(null); }}>Remove property</Button>
           </div>
         </Dialog>
       ) : null}
@@ -173,9 +173,9 @@ function PropertyDialog({
           </SelectInput>
         </Field>
         {error ? <p className="text-sm text-danger">{error}</p> : null}
-        <div className="flex justify-end gap-2">
-          <Button variant="secondary" onClick={onClose}>Cancel</Button>
-          <Button type="submit" disabled={busy}>{busy ? "Checking…" : "Save property"}</Button>
+        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <Button className="w-full sm:w-auto" variant="secondary" onClick={onClose}>Cancel</Button>
+          <Button className="w-full sm:w-auto" type="submit" disabled={busy}>{busy ? "Checking…" : "Save property"}</Button>
         </div>
       </form>
     </Dialog>

@@ -1,4 +1,4 @@
-import { Building2, CalendarDays, LayoutDashboard, ListChecks, ScrollText, Settings, Users } from "lucide-react";
+import { Building2, CalendarDays, LayoutDashboard, ListChecks, ScrollText, Settings, Users, X } from "lucide-react";
 import type { ReactNode } from "react";
 import { NavLink } from "react-router-dom";
 import { initials } from "../../domain/format";
@@ -20,10 +20,28 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
 
   return (
     <>
-      {open ? <button type="button" className="fixed inset-0 z-30 bg-ink/25 lg:hidden" aria-label="Close navigation" onClick={onClose} /> : null}
-      <aside className={`fixed inset-y-0 left-0 z-30 flex w-60 flex-col border-r border-line bg-white ${open ? "flex" : "hidden"} lg:flex`}>
-        <div className="px-4 py-4">
+      <div
+        className={`fixed inset-0 z-30 bg-ink/30 transition-opacity duration-200 lg:hidden ${
+          open ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`}
+        onClick={onClose}
+        aria-hidden="true"
+      />
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 flex w-64 max-w-[80vw] flex-col border-r border-line bg-white shadow-xl transition-transform duration-200 ease-in-out lg:w-60 lg:shadow-none lg:translate-x-0 ${
+          open ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div className="flex items-center justify-between px-4 py-4">
           <Logo />
+          <button
+            type="button"
+            className="rounded-md p-1.5 text-muted hover:bg-zinc-100 lg:hidden cursor-pointer"
+            aria-label="Close navigation"
+            onClick={onClose}
+          >
+            <X size={18} />
+          </button>
         </div>
         <nav className="flex-1 space-y-1 px-2" aria-label="Primary">
           {links.map((link) => (

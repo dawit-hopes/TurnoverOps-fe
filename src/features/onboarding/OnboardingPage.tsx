@@ -161,13 +161,13 @@ export function OnboardingPage() {
         </div>
 
         {step === 0 ? (
-          <section className="mt-8">
-            <h1 className="text-2xl font-semibold tracking-tight">Let's connect your properties.</h1>
+          <section className="mt-6 sm:mt-8">
+            <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">Let's connect your properties.</h1>
             <p className="mt-2 max-w-2xl text-sm text-muted">Connect your reservation calendars so TurnoverOps can plan cleaning around guest checkouts and arrivals.</p>
             <div className="mt-6 space-y-4">
               {properties.map((property, index) => (
                 <article key={property.id} className="rounded-lg border border-line bg-white p-4">
-                  <div className="mb-3 flex items-center justify-between gap-3">
+                  <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                     <h2 className="text-sm font-semibold">Property {index + 1}</h2>
                     <div className="flex items-center gap-2">
                       <CalendarBadge state={property.calendarState} />
@@ -191,15 +191,19 @@ export function OnboardingPage() {
                         onChange={(event) => updateProperty(property.id, { icalUrl: event.target.value, calendarState: "not_connected", calendarError: undefined })}
                       />
                     </Field>
-                    <TimeField label="Standard checkout" value={property.checkoutTime} onChange={(checkoutTime) => updateProperty(property.id, { checkoutTime })} />
-                    <TimeField label="Standard check-in" value={property.checkInTime} onChange={(checkInTime) => updateProperty(property.id, { checkInTime })} />
-                    <Field label="Estimated cleaning duration" htmlFor={`${property.id}-duration`}>
-                      <SelectInput id={`${property.id}-duration`} value={property.cleaningDurationMinutes} onChange={(event) => updateProperty(property.id, { cleaningDurationMinutes: Number(event.target.value) })}>
-                        {DURATION_OPTIONS.map((option) => (
-                          <option key={option.value} value={option.value}>{option.label}</option>
-                        ))}
-                      </SelectInput>
-                    </Field>
+                    <div className="grid grid-cols-2 gap-3 sm:col-span-2">
+                      <TimeField label="Standard checkout" value={property.checkoutTime} onChange={(checkoutTime) => updateProperty(property.id, { checkoutTime })} />
+                      <TimeField label="Standard check-in" value={property.checkInTime} onChange={(checkInTime) => updateProperty(property.id, { checkInTime })} />
+                    </div>
+                    <div className="sm:col-span-2">
+                      <Field label="Estimated cleaning duration" htmlFor={`${property.id}-duration`}>
+                        <SelectInput id={`${property.id}-duration`} value={property.cleaningDurationMinutes} onChange={(event) => updateProperty(property.id, { cleaningDurationMinutes: Number(event.target.value) })}>
+                          {DURATION_OPTIONS.map((option) => (
+                            <option key={option.value} value={option.value}>{option.label}</option>
+                          ))}
+                        </SelectInput>
+                      </Field>
+                    </div>
                   </div>
                   {errors[`${property.id}:time`] ? <p className="mt-2 text-xs text-danger">{errors[`${property.id}:time`]}</p> : null}
                 </article>
@@ -210,14 +214,14 @@ export function OnboardingPage() {
             </button>
             {errors.form ? <p className="mt-3 text-sm text-danger">{errors.form}</p> : null}
             <div className="mt-8">
-              <Button onClick={() => void continueToCleaners()} disabled={busy}>Continue to cleaners</Button>
+              <Button className="w-full sm:w-auto" onClick={() => void continueToCleaners()} disabled={busy}>Continue to cleaners</Button>
             </div>
           </section>
         ) : null}
 
         {step === 1 ? (
-          <section className="mt-8">
-            <h1 className="text-2xl font-semibold tracking-tight">Who handles your turnovers?</h1>
+          <section className="mt-6 sm:mt-8">
+            <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">Who handles your turnovers?</h1>
             <p className="mt-2 max-w-2xl text-sm text-muted">Tell us who is available to clean each property. Assignment emails go to the address you enter here.</p>
             <div className="mt-6 space-y-4">
               {cleaners.map((cleaner, index) => (
@@ -242,8 +246,10 @@ export function OnboardingPage() {
                       <WeekdayPicker value={cleaner.workingDays} onChange={(workingDays) => updateCleaner(cleaner.id, { workingDays })} />
                       {errors[`${cleaner.id}:days`] ? <p className="mt-1 text-xs text-danger">{errors[`${cleaner.id}:days`]}</p> : null}
                     </div>
-                    <TimeField label="Start" value={cleaner.startTime} onChange={(startTime) => updateCleaner(cleaner.id, { startTime })} />
-                    <TimeField label="End" value={cleaner.endTime} onChange={(endTime) => updateCleaner(cleaner.id, { endTime })} />
+                    <div className="grid grid-cols-2 gap-3 sm:col-span-2">
+                      <TimeField label="Start" value={cleaner.startTime} onChange={(startTime) => updateCleaner(cleaner.id, { startTime })} />
+                      <TimeField label="End" value={cleaner.endTime} onChange={(endTime) => updateCleaner(cleaner.id, { endTime })} />
+                    </div>
                     {errors[`${cleaner.id}:hours`] ? <p className="text-xs text-danger sm:col-span-2">{errors[`${cleaner.id}:hours`]}</p> : null}
                     <div className="sm:col-span-2">
                       <p className="mb-1 text-sm font-medium">Preferred properties</p>
@@ -258,9 +264,11 @@ export function OnboardingPage() {
                         })}
                       </div>
                     </div>
-                    <Field label="Maximum jobs per day" htmlFor={`${cleaner.id}-max`} hint="Optional." error={errors[`${cleaner.id}:max`]}>
-                      <TextInput id={`${cleaner.id}-max`} type="number" min={1} value={cleaner.maxJobsPerDay ?? ""} onChange={(event) => updateCleaner(cleaner.id, { maxJobsPerDay: event.target.value ? Number(event.target.value) : undefined })} />
-                    </Field>
+                    <div className="sm:col-span-2">
+                      <Field label="Maximum jobs per day" htmlFor={`${cleaner.id}-max`} hint="Optional." error={errors[`${cleaner.id}:max`]}>
+                        <TextInput id={`${cleaner.id}-max`} type="number" min={1} value={cleaner.maxJobsPerDay ?? ""} onChange={(event) => updateCleaner(cleaner.id, { maxJobsPerDay: event.target.value ? Number(event.target.value) : undefined })} />
+                      </Field>
+                    </div>
                   </div>
                 </article>
               ))}
@@ -269,16 +277,16 @@ export function OnboardingPage() {
               <Plus size={16} /> Add another cleaner
             </button>
             {errors.cleaners ? <p className="mt-3 text-sm text-danger">{errors.cleaners}</p> : null}
-            <div className="mt-8 flex gap-2">
-              <Button variant="secondary" onClick={() => setStep(0)}>Back</Button>
-              <Button onClick={continueToReview}>Review my schedule</Button>
+            <div className="mt-8 flex flex-col-reverse gap-2 sm:flex-row">
+              <Button className="w-full sm:w-auto" variant="secondary" onClick={() => setStep(0)}>Back</Button>
+              <Button className="w-full sm:w-auto" onClick={continueToReview}>Review my schedule</Button>
             </div>
           </section>
         ) : null}
 
         {step === 2 ? (
-          <section className="mt-8">
-            <h1 className="text-2xl font-semibold tracking-tight">Your operations, ready to review.</h1>
+          <section className="mt-6 sm:mt-8">
+            <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">Your operations, ready to review.</h1>
             <p className="mt-2 max-w-2xl text-sm text-muted">
               Signed in as {host?.email}. Confirming setup saves these properties and cleaners, syncs calendars, and builds today's plan for review. Each cleaner receives a welcome email with an optional Google Calendar connection link; planning can proceed with configured hours if they skip it.
             </p>
@@ -310,9 +318,10 @@ export function OnboardingPage() {
               </ul>
             </div>
             {errors.form ? <p className="mt-3 text-sm text-danger">{errors.form}</p> : null}
-            <div className="mt-8 flex gap-2">
-              <Button variant="secondary" onClick={() => setStep(1)} disabled={busy}>Back</Button>
+            <div className="mt-8 flex flex-col-reverse gap-2 sm:flex-row">
+              <Button className="w-full sm:w-auto" variant="secondary" onClick={() => setStep(1)} disabled={busy}>Back</Button>
               <Button
+                className="w-full sm:w-auto"
                 disabled={busy}
                 onClick={() => {
                   setBusy(true);
@@ -336,8 +345,8 @@ export function OnboardingPage() {
         ) : null}
 
         {step === 3 ? (
-          <section className="mt-8">
-            <h1 className="text-2xl font-semibold tracking-tight">Review today's plan.</h1>
+          <section className="mt-6 sm:mt-8">
+            <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">Review today's plan.</h1>
             <p className="mt-2 max-w-2xl text-sm text-muted">This plan is saved for review. Cleaners have not been messaged. Retry if a calendar or the planner failed.</p>
             {busy ? (
               <div className="mt-6 max-w-2xl rounded-lg border border-line bg-white p-5" role="status" aria-live="polite">
@@ -358,8 +367,9 @@ export function OnboardingPage() {
               <p className="mt-4 text-sm text-muted">No plan has been returned yet.</p>
             )}
             {planError || errors.form ? <p className="mt-3 text-sm text-danger">{planError || errors.form}</p> : null}
-            <div className="mt-8 flex gap-2">
+            <div className="mt-8 flex flex-col-reverse gap-2 sm:flex-row">
               <Button
+                className="w-full sm:w-auto"
                 variant="secondary"
                 disabled={busy}
                 onClick={() => {
@@ -373,14 +383,14 @@ export function OnboardingPage() {
               >
                 {busy ? "Retrying…" : "Retry"}
               </Button>
-              <Button disabled={busy || !plan} onClick={() => setStep(4)}>Continue to approval</Button>
+              <Button className="w-full sm:w-auto" disabled={busy || !plan} onClick={() => setStep(4)}>Continue to approval</Button>
             </div>
           </section>
         ) : null}
 
         {step === 4 ? (
-          <section className="mt-8">
-            <h1 className="text-2xl font-semibold tracking-tight">How should assignments go out?</h1>
+          <section className="mt-6 sm:mt-8">
+            <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">How should assignments go out?</h1>
             <p className="mt-2 max-w-2xl text-sm text-muted">Review only keeps the plan on your dashboard. Automatic emails cleaners for this approved plan and for later daily runs.</p>
             <fieldset className="mt-6 space-y-3">
               <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-line bg-white p-4 text-sm">
@@ -393,9 +403,10 @@ export function OnboardingPage() {
               </label>
             </fieldset>
             {planError ? <p className="mt-3 text-sm text-danger">{planError}</p> : null}
-            <div className="mt-8 flex gap-2">
-              <Button variant="secondary" onClick={() => setStep(3)} disabled={busy}>Back</Button>
+            <div className="mt-8 flex flex-col-reverse gap-2 sm:flex-row">
+              <Button className="w-full sm:w-auto" variant="secondary" onClick={() => setStep(3)} disabled={busy}>Back</Button>
               <Button
+                className="w-full sm:w-auto"
                 disabled={busy}
                 onClick={() => {
                   setBusy(true);

@@ -113,7 +113,7 @@ export function DecisionPanel({ taskId, onLater }: { taskId: string; onLater: ()
             <ul className="space-y-3">
               {feasible.map((candidate, index) => (
                 <li key={candidate.cleaner_id} className="rounded-md border border-line px-4 py-3">
-                  <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
                     <div className="min-w-0 space-y-1">
                       <p className="font-medium">{candidate.cleaner_name}</p>
                       <p className="text-sm text-muted">{optionWhen(candidate, timeZone)}</p>
@@ -122,6 +122,7 @@ export function DecisionPanel({ taskId, onLater }: { taskId: string; onLater: ()
                     </div>
                     <Button
                       variant={index === 0 ? "primary" : "secondary"}
+                      className="w-full sm:w-auto"
                       disabled={Boolean(busyId)}
                       onClick={() => {
                         setBusyId(candidate.cleaner_id);
@@ -151,20 +152,20 @@ export function DecisionPanel({ taskId, onLater }: { taskId: string; onLater: ()
                   {email ? <p>{email}</p> : null}
                 </div>
               ) : null}
-              <div className="flex flex-wrap gap-2">
-                <Button onClick={() => setEditing(true)}>Adjust the schedule</Button>
-                <Button variant="ghost" onClick={onLater}>
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <Button className="w-full sm:w-auto" onClick={() => setEditing(true)}>Adjust the schedule</Button>
+                <Button className="w-full sm:w-auto" variant="ghost" onClick={onLater}>
                   Handle this later
                 </Button>
               </div>
             </div>
           ) : null}
           {phase === "ready" && feasible.length > 0 ? (
-            <div className="flex flex-wrap gap-2">
-              <Button variant="ghost" onClick={() => setEditing(true)}>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <Button className="w-full sm:w-auto" variant="ghost" onClick={() => setEditing(true)}>
                 Adjust the schedule
               </Button>
-              <Button variant="ghost" onClick={onLater}>
+              <Button className="w-full sm:w-auto" variant="ghost" onClick={onLater}>
                 Handle this later
               </Button>
             </div>
@@ -305,19 +306,19 @@ function ScheduleEditor({
         <div className="grid gap-3 sm:grid-cols-2">
           {crosses ? (
             <Field label="Cleaning start date" htmlFor="clean-start-date">
-              <input id="clean-start-date" type="date" value={startDate} min={zonedDateKey(gapStart, timeZone)} max={zonedDateKey(gapEnd, timeZone)} onChange={(event) => setStartDate(event.target.value)} className="w-full rounded-md border border-line px-3 py-2 text-sm" required />
+              <input id="clean-start-date" type="date" value={startDate} min={zonedDateKey(gapStart, timeZone)} max={zonedDateKey(gapEnd, timeZone)} onChange={(event) => setStartDate(event.target.value)} className="w-full rounded-md border border-line bg-white px-3 py-2 text-sm" required />
             </Field>
           ) : null}
           <Field label="Cleaning start" htmlFor="clean-start">
-            <input id="clean-start" type="time" value={startTime} onChange={(event) => setStartTime(event.target.value)} className="w-full rounded-md border border-line px-3 py-2 text-sm" required />
+            <input id="clean-start" type="time" value={startTime} onChange={(event) => setStartTime(event.target.value)} className="w-full rounded-md border border-line bg-white px-3 py-2 text-sm" required />
           </Field>
           {crosses ? (
             <Field label="Cleaning end date" htmlFor="clean-end-date">
-              <input id="clean-end-date" type="date" value={endDate} min={startDate} max={zonedDateKey(gapEnd, timeZone)} onChange={(event) => setEndDate(event.target.value)} className="w-full rounded-md border border-line px-3 py-2 text-sm" required />
+              <input id="clean-end-date" type="date" value={endDate} min={startDate} max={zonedDateKey(gapEnd, timeZone)} onChange={(event) => setEndDate(event.target.value)} className="w-full rounded-md border border-line bg-white px-3 py-2 text-sm" required />
             </Field>
           ) : null}
           <Field label="Cleaning end" htmlFor="clean-end">
-            <input id="clean-end" type="time" value={endTime} onChange={(event) => setEndTime(event.target.value)} className="w-full rounded-md border border-line px-3 py-2 text-sm" required />
+            <input id="clean-end" type="time" value={endTime} onChange={(event) => setEndTime(event.target.value)} className="w-full rounded-md border border-line bg-white px-3 py-2 text-sm" required />
           </Field>
         </div>
         {outside ? <p className="text-sm text-warning">That time is outside the booking. Checkout and check-in stay as reserved.</p> : null}
@@ -326,11 +327,11 @@ function ScheduleEditor({
         {check === "ready" && feasible.length > 0 ? <p className="text-sm">{feasible[0].cleaner_name} can take this window, and it meets the deadline.</p> : null}
         {check === "ready" && feasible.length === 0 ? <p className="text-sm text-warning">No configured cleaner can take this window.</p> : null}
         {problem ? <p className="text-sm text-danger">{problem}</p> : null}
-        <div className="flex justify-end gap-2">
-          <Button variant="ghost" onClick={onClose}>
+        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <Button className="w-full sm:w-auto" variant="ghost" onClick={onClose}>
             Cancel
           </Button>
-          <Button type="submit" disabled={!canSave}>
+          <Button className="w-full sm:w-auto" type="submit" disabled={!canSave}>
             {saving ? "Saving…" : "Save cleaning window"}
           </Button>
         </div>

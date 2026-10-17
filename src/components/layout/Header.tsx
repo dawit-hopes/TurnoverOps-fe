@@ -24,11 +24,11 @@ export function Header({ title, subtitle, onMenu }: { title: string; subtitle: s
           <MenuIcon size={18} />
         </button>
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-            <h1 className="text-lg font-semibold tracking-tight">{title}</h1>
-            <p className="text-sm text-muted">{today}</p>
+          <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 sm:gap-x-3 sm:gap-y-1">
+            <h1 className="text-base font-semibold tracking-tight sm:text-lg">{title}</h1>
+            <p className="text-xs text-muted sm:text-sm">{today}</p>
           </div>
-          <p className="truncate text-sm text-muted">{subtitle}</p>
+          <p className="truncate text-xs text-muted sm:text-sm">{subtitle}</p>
         </div>
         <Menu
           label={
@@ -39,7 +39,7 @@ export function Header({ title, subtitle, onMenu }: { title: string; subtitle: s
           }
         >
           {(close) => (
-            <div className="w-80">
+            <div className="w-80 max-w-[calc(100vw-2.5rem)] max-h-[75vh] overflow-y-auto">
               <p className="px-3 py-2 text-xs font-medium text-muted">Needs attention</p>
               {attention.length === 0 ? (
                 <p className="px-3 py-3 text-sm text-muted">All caught up. No unresolved operational issues.</p>
@@ -68,7 +68,7 @@ export function Header({ title, subtitle, onMenu }: { title: string; subtitle: s
           }
         >
           {(close) => (
-            <div className="w-56">
+            <div className="w-56 max-w-[calc(100vw-2.5rem)]">
               <div className="px-3 py-2">
                 <p className="text-sm font-medium">{host?.name}</p>
                 <p className="text-xs text-muted">{host?.email}</p>

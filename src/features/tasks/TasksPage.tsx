@@ -36,10 +36,12 @@ export function TasksPage() {
 
   return (
     <div className="space-y-5">
-      <div className="grid gap-2 lg:grid-cols-[minmax(0,1.4fr)_repeat(4,minmax(0,1fr))]">
-        <TextInput value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search property or cleaner" aria-label="Search tasks" />
-        <input type="date" value={from} onChange={(event) => setFrom(event.target.value)} aria-label="From date" className="rounded-md border border-line bg-white px-3 py-2 text-sm" />
-        <input type="date" value={to} onChange={(event) => setTo(event.target.value)} aria-label="To date" className="rounded-md border border-line bg-white px-3 py-2 text-sm" />
+      <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-[minmax(0,1.4fr)_repeat(4,minmax(0,1fr))]">
+        <div className="sm:col-span-2 md:col-span-3 lg:col-span-1">
+          <TextInput value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search property or cleaner" aria-label="Search tasks" />
+        </div>
+        <input type="date" value={from} onChange={(event) => setFrom(event.target.value)} aria-label="From date" className="w-full rounded-md border border-line bg-white px-3 py-2 text-sm" />
+        <input type="date" value={to} onChange={(event) => setTo(event.target.value)} aria-label="To date" className="w-full rounded-md border border-line bg-white px-3 py-2 text-sm" />
         <SelectInput aria-label="Property" value={propertyId} onChange={(event) => setPropertyId(event.target.value)}>
           <option value="">All properties</option>
           {workspace.properties.map((property) => (
@@ -82,17 +84,35 @@ export function TasksPage() {
                       <button
                         type="button"
                         onClick={() => openTask(task.id)}
-                        className="grid w-full grid-cols-[5.5rem_minmax(0,1fr)_auto] items-center gap-3 px-3 py-3 text-left hover:bg-zinc-50 sm:grid-cols-[7.5rem_minmax(0,1fr)_auto] sm:px-4"
+                        className="w-full px-3.5 py-3 text-left hover:bg-zinc-50 cursor-pointer sm:grid sm:grid-cols-[7.5rem_minmax(0,1fr)_auto] sm:items-center sm:gap-3 sm:px-4"
                       >
-                        <span className="text-sm font-medium tabular-nums">
+                        {/* Mobile card layout */}
+                        <div className="sm:hidden">
+                          <div className="flex items-start justify-between gap-2">
+                            <span className="font-medium text-sm text-ink">{property?.name ?? "Property"}</span>
+                            <StatusBadge status={task.status} />
+                          </div>
+                          <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted">
+                            <span className="font-medium text-ink">
+                              {formatTime(task.windowStart, timeZone)}–{formatTime(task.windowEnd, timeZone)}
+                            </span>
+                            <span>·</span>
+                            <span>{cleaner?.name ?? "Unassigned"}</span>
+                          </div>
+                        </div>
+
+                        {/* Tablet/Desktop grid layout */}
+                        <span className="hidden sm:block text-sm font-medium tabular-nums">
                           {formatTime(task.windowStart, timeZone)}
                           <span className="mt-0.5 block text-xs font-normal text-muted">{formatTime(task.windowEnd, timeZone)}</span>
                         </span>
-                        <span className="min-w-0">
+                        <span className="hidden sm:block min-w-0">
                           <span className="block truncate text-sm font-medium">{property?.name ?? "Property"}</span>
                           <span className="mt-0.5 block truncate text-xs text-muted">{cleaner?.name ?? "Unassigned"}</span>
                         </span>
-                        <StatusBadge status={task.status} />
+                        <span className="hidden sm:inline-flex">
+                          <StatusBadge status={task.status} />
+                        </span>
                       </button>
                     </li>
                   );

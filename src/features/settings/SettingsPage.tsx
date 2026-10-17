@@ -42,7 +42,7 @@ export function SettingsPage() {
               {zones.map((zone) => <option key={zone.value} value={zone.value}>{zone.label}</option>)}
             </SelectInput>
           </Field>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Field label="Default checkout">
               <SelectInput aria-label="Default checkout" value={settings.defaultCheckoutTime} onChange={(event) => patch({ defaultCheckoutTime: event.target.value })}>
                 {timeOptions().map((time) => <option key={time} value={time}>{formatClock(time)}</option>)}
@@ -99,20 +99,21 @@ export function SettingsPage() {
               <dd className="text-muted">Assignment and weekly schedule emails are sent from the server. SMTP credentials stay on the server and are not shown here.</dd>
             </div>
           </div>
-          <div className="flex items-start justify-between gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <dt className="font-medium">Google Calendar</dt>
               <dd className="text-muted">{settings.googleCalendarConnected ? "Connected. Confirmed cleanings can be published to your calendar." : "Not connected. Property iCal feeds are separate from this account connection."}</dd>
             </div>
             {settings.googleCalendarConnected ? (
-              <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs">Connected</span>
+              <span className="self-start rounded-full bg-zinc-100 px-2 py-0.5 text-xs sm:self-auto">Connected</span>
             ) : (
-              <Button size="sm" variant="secondary" onClick={() => void connectGoogleCalendar()}>Connect</Button>
+              <Button size="sm" variant="secondary" className="w-full sm:w-auto shrink-0" onClick={() => void connectGoogleCalendar()}>Connect</Button>
             )}
           </div>
         </dl>
       </section>
       <Button
+        className="w-full sm:w-auto"
         onClick={() => {
           saveSettings(settings);
         }}

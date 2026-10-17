@@ -32,7 +32,7 @@ export function Menu({
     <div ref={ref} className="relative">
       <div onClick={() => setOpen((value) => !value)}>{label}</div>
       {open ? (
-        <div className={`absolute z-30 mt-2 min-w-64 rounded-lg border border-line bg-white p-1 ${align === "right" ? "right-0" : "left-0"}`}>
+        <div className={`absolute z-30 mt-2 min-w-56 max-w-[calc(100vw-1.5rem)] rounded-lg border border-line bg-white p-1 shadow-lg ${align === "right" ? "right-0" : "left-0"}`}>
           {typeof children === "function" ? children(() => setOpen(false)) : children}
         </div>
       ) : null}

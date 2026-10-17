@@ -17,6 +17,8 @@ export function CalendarPage() {
   const [cleanerId, setCleanerId] = useState("");
   const [cursor, setCursor] = useState(() => todayKey(workspace?.settings.timeZone ?? "Africa/Addis_Ababa"));
   const [now, setNow] = useState(() => new Date());
+  const [mobileView, setMobileView] = useState<"day" | "week">("day");
+  const [activeDay, setActiveDay] = useState<string>(() => todayKey(workspace?.settings.timeZone ?? "Africa/Addis_Ababa"));
   const scrollerRef = useRef<HTMLDivElement>(null);
   const timeZone = workspace?.settings.timeZone ?? "Africa/Addis_Ababa";
   const weekStart = useMemo(() => startOfWeek(cursor, timeZone), [cursor, timeZone]);
@@ -25,6 +27,9 @@ export function CalendarPage() {
   const nowMinutes = minutesOfDay(now.toISOString(), timeZone);
   const showNow = days.includes(today);
 
+  // Keep activeDay in current week if week cursor shifts
+  const selectedDay = days.includes(activeDay) ? activeDay : (days.includes(today) ? today : days[0]);
+
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 30_000);
     return () => window.clearInterval(timer);
@@ -32,36 +37,133 @@ export function CalendarPage() {
 
   useEffect(() => {
     const scroller = scrollerRef.current;
-    if (!scroller || !showNow) return;
+    if (!scroller || (!showNow && mobileView !== "day")) return;
     const top = (minutesOfDay(new Date().toISOString(), timeZone) / 60) * HOUR_HEIGHT;
     scroller.scrollTop = Math.max(0, top - scroller.clientHeight / 3);
-  }, [showNow, timeZone, weekStart]);
+  }, [showNow, timeZone, weekStart, mobileView, selectedDay]);
 
   if (!workspace) return null;
 
   return (
     <div className="space-y-4">
       {cleanerId ? <p className="text-sm text-muted">Cleaning blocks are limited to the selected cleaner. Checkouts and check-ins stay visible.</p> : null}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <Button variant="secondary" size="sm" aria-label="Previous week" onClick={() => setCursor(addDaysKey(weekStart, -7))}><ChevronLeft size={16} /></Button>
-          <Button variant="secondary" size="sm" onClick={() => setCursor(todayKey(timeZone))}>This week</Button>
-          <Button variant="secondary" size="sm" aria-label="Next week" onClick={() => setCursor(addDaysKey(weekStart, 7))}><ChevronRight size={16} /></Button>
-          <p className="text-sm text-muted">{formatDayKey(days[0], timeZone)} – {formatDayKey(days[6], timeZone)}</p>
+      
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-1">
+            <Button variant="secondary" size="sm" aria-label="Previous week" onClick={() => setCursor(addDaysKey(weekStart, -7))}><ChevronLeft size={16} /></Button>
+            <Button variant="secondary" size="sm" onClick={() => { setCursor(todayKey(timeZone)); setActiveDay(todayKey(timeZone)); }}>This week</Button>
+            <Button variant="secondary" size="sm" aria-label="Next week" onClick={() => setCursor(addDaysKey(weekStart, 7))}><ChevronRight size={16} /></Button>
+          </div>
+          <p className="text-xs text-muted sm:text-sm">{formatDayKey(days[0], timeZone)} – {formatDayKey(days[6], timeZone)}</p>
         </div>
-        <div className="flex gap-2">
-          <SelectInput aria-label="Property" className="w-auto" value={propertyId} onChange={(event) => setPropertyId(event.target.value)}>
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:w-auto">
+          <SelectInput aria-label="Property" className="w-full sm:w-auto" value={propertyId} onChange={(event) => setPropertyId(event.target.value)}>
             <option value="">All properties</option>
             {workspace.properties.map((property) => <option key={property.id} value={property.id}>{property.name}</option>)}
           </SelectInput>
-          <SelectInput aria-label="Cleaner" className="w-auto" value={cleanerId} onChange={(event) => setCleanerId(event.target.value)}>
+          <SelectInput aria-label="Cleaner" className="w-full sm:w-auto" value={cleanerId} onChange={(event) => setCleanerId(event.target.value)}>
             <option value="">All cleaners</option>
             {workspace.cleaners.map((cleaner) => <option key={cleaner.id} value={cleaner.id}>{cleaner.name}</option>)}
           </SelectInput>
         </div>
       </div>
-      <div ref={scrollerRef} className="max-h-[calc(100vh-13rem)] overflow-auto rounded-lg border border-line bg-white">
-        <div className="min-w-[880px]">
+
+      {/* Mobile Day / Week view switcher & Day selector tabs */}
+      <div className="space-y-2 md:hidden">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-medium text-muted">View Mode</span>
+          <div className="inline-flex rounded-lg border border-line bg-white p-0.5 text-xs">
+            <button
+              type="button"
+              className={`rounded-md px-2.5 py-1 font-medium transition ${mobileView === "day" ? "bg-accent text-white" : "text-muted hover:text-ink"}`}
+              onClick={() => setMobileView("day")}
+            >
+              Day view
+            </button>
+            <button
+              type="button"
+              className={`rounded-md px-2.5 py-1 font-medium transition ${mobileView === "week" ? "bg-accent text-white" : "text-muted hover:text-ink"}`}
+              onClick={() => setMobileView("week")}
+            >
+              7-day grid
+            </button>
+          </div>
+        </div>
+
+        {mobileView === "day" && (
+          <div className="flex gap-1 overflow-x-auto pb-1 pt-0.5">
+            {days.map((day) => {
+              const isSelected = day === selectedDay;
+              const isToday = day === today;
+              const dayLabel = formatDayKey(day, timeZone);
+              // Split day into short day name (e.g. Mon) and date (e.g. 17)
+              const parts = dayLabel.split(" ");
+              return (
+                <button
+                  key={day}
+                  type="button"
+                  onClick={() => setActiveDay(day)}
+                  className={`flex flex-1 min-w-10 flex-col items-center rounded-lg border px-1.5 py-1.5 text-xs transition cursor-pointer ${
+                    isSelected
+                      ? "border-accent bg-accent text-white shadow-xs"
+                      : isToday
+                      ? "border-danger/40 bg-danger-soft text-danger"
+                      : "border-line bg-white text-ink hover:bg-zinc-50"
+                  }`}
+                >
+                  <span className={`text-[10px] font-medium uppercase ${isSelected ? "text-white/80" : "text-muted"}`}>
+                    {parts[0]}
+                  </span>
+                  <span className="text-xs font-semibold">{parts[1] || ""}</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      <div ref={scrollerRef} className="max-h-[calc(100vh-14rem)] overflow-auto rounded-lg border border-line bg-white">
+        {mobileView === "day" ? (
+          /* Mobile Single Day View */
+          <div className="md:hidden">
+            <div className="sticky top-0 z-30 grid grid-cols-[4rem_1fr] border-b border-line bg-white">
+              <div />
+              <h2 className={`border-l border-line px-3 py-2 text-sm font-semibold ${selectedDay === today ? "text-danger" : ""}`}>
+                {formatDayKey(selectedDay, timeZone)}{selectedDay === today ? " · Today" : ""}
+              </h2>
+            </div>
+            <div className="relative grid grid-cols-[4rem_1fr]" style={{ height: GRID_HEIGHT }}>
+              <div className="relative">
+                {Array.from({ length: 24 }, (_, hour) => (
+                  <div key={hour} className="absolute right-2 -translate-y-1/2 text-[10px] text-muted" style={{ top: hour * HOUR_HEIGHT }}>
+                    {hour === 0 ? "" : hourLabel(hour)}
+                  </div>
+                ))}
+                {selectedDay === today ? (
+                  <div className="absolute right-1 z-20 -translate-y-1/2" style={{ top: (nowMinutes / 60) * HOUR_HEIGHT }}>
+                    <span className="rounded bg-danger px-1 py-0.5 text-[10px] font-semibold leading-none text-white">
+                      {formatTime(now.toISOString(), timeZone)}
+                    </span>
+                  </div>
+                ) : null}
+              </div>
+              <DayColumn
+                day={selectedDay}
+                isToday={selectedDay === today}
+                nowMinutes={nowMinutes}
+                timeZone={timeZone}
+                propertyId={propertyId}
+                cleanerId={cleanerId}
+                workspace={workspace}
+                onOpenTask={openTask}
+              />
+            </div>
+          </div>
+        ) : null}
+
+        {/* Full 7-Day Grid View (shown on md+ or when mobileView === "week") */}
+        <div className={`min-w-[880px] ${mobileView === "day" ? "hidden md:block" : "block"}`}>
           <div className="sticky top-0 z-30 grid grid-cols-[4.5rem_repeat(7,minmax(0,1fr))] border-b border-line bg-white">
             <div />
             {days.map((day) => (

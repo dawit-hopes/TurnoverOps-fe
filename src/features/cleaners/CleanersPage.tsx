@@ -16,11 +16,11 @@ export function CleanersPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-start justify-between gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <p className="max-w-2xl text-sm text-muted">Cleaners receive assignment emails at the address stored here. They only need to reply if they cannot take a job.</p>
-        <Button onClick={() => setEditing("new")}>Add cleaner</Button>
+        <Button className="w-full sm:w-auto shrink-0" onClick={() => setEditing("new")}>Add cleaner</Button>
       </div>
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {workspace.cleaners.map((cleaner) => {
           const jobsToday = workspace.tasks.filter((task) => task.cleanerId === cleaner.id && zonedDateKey(task.windowStart, timeZone) === today && task.status !== "blocked").length;
           const upcoming = workspace.tasks.filter((task) => task.cleanerId === cleaner.id && task.status !== "completed").slice(0, 4);
@@ -52,7 +52,7 @@ export function CleanersPage() {
                 </div>
               </dl>
               <div className="mt-4 flex flex-wrap gap-2">
-                <Button size="sm" variant="secondary" onClick={() => setEditing(cleaner)}>Edit cleaner</Button>
+                <Button size="sm" variant="secondary" className="w-full sm:w-auto" onClick={() => setEditing(cleaner)}>Edit cleaner</Button>
               </div>
               <details className="mt-4">
                 <summary className="cursor-pointer text-sm font-medium">Assignments and recent responses</summary>
@@ -166,9 +166,9 @@ function CleanerDialog({
           <TextInput id="cleaner-max" type="number" min={1} value={maxJobs} onChange={(event) => setMaxJobs(event.target.value)} />
         </Field>
         {error ? <p className="text-sm text-danger">{error}</p> : null}
-        <div className="flex justify-end gap-2">
-          <Button variant="secondary" onClick={onClose}>Cancel</Button>
-          <Button type="submit">Save cleaner</Button>
+        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <Button className="w-full sm:w-auto" variant="secondary" onClick={onClose}>Cancel</Button>
+          <Button className="w-full sm:w-auto" type="submit">Save cleaner</Button>
         </div>
       </form>
     </Dialog>
