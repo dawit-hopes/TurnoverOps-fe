@@ -16,7 +16,7 @@ const links: Array<{ to: string; label: string; icon: ReactNode }> = [
 ];
 
 export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const { host, attention, signOut, loadSample } = useOps();
+  const { host, attention, signOut } = useOps();
 
   return (
     <>
@@ -48,9 +48,6 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
           <p className="truncate text-xs text-muted">{host?.email}</p>
           <div className="mt-2 flex items-center gap-2">
             <span className="grid h-8 w-8 place-items-center rounded-full bg-zinc-100 text-xs font-semibold">{initials(host?.name ?? "Host")}</span>
-            <button type="button" className="text-xs text-muted hover:text-ink" onClick={() => void loadSample()}>
-              Load sample
-            </button>
             <button type="button" className="text-xs text-muted hover:text-ink" onClick={signOut}>
               Sign out
             </button>

@@ -46,6 +46,10 @@ export function CleanersPage() {
                   <dt className="text-xs text-muted">Workload</dt>
                   <dd>{jobsToday} today{cleaner.maxJobsPerDay ? ` · limit ${cleaner.maxJobsPerDay}` : ""}</dd>
                 </div>
+                <div>
+                  <dt className="text-xs text-muted">Google Calendar</dt>
+                  <dd>{cleaner.calendarState === "connected" ? "Connected" : cleaner.calendarState === "access_error" ? "Access error · unavailable for scheduling" : "Not connected · external availability unverified"}</dd>
+                </div>
               </dl>
               <div className="mt-4 flex flex-wrap gap-2">
                 <Button size="sm" variant="secondary" onClick={() => setEditing(cleaner)}>Edit cleaner</Button>

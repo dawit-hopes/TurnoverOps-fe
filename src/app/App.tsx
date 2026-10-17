@@ -9,6 +9,7 @@ import { CleanersPage } from "../features/cleaners/CleanersPage";
 import { OnboardingPage } from "../features/onboarding/OnboardingPage";
 import { OverviewPage } from "../features/overview/OverviewPage";
 import { PropertiesPage } from "../features/properties/PropertiesPage";
+import { RejectAssignmentPage } from "../features/cleaners/RejectAssignmentPage";
 import { SettingsPage } from "../features/settings/SettingsPage";
 import { TasksPage } from "../features/tasks/TasksPage";
 import { useOps } from "../state/OperationsContext";
@@ -38,6 +39,7 @@ export function App() {
   return (
     <Routes>
       <Route path="/integrations/google-calendar" element={<GoogleCalendarCallback />} />
+      <Route path="/reject/:token" element={<RejectAssignmentPage />} />
       <Route
         path="/sign-in"
         element={host ? <Navigate to={dashboardReady ? "/overview" : "/onboarding"} replace /> : <SignInPage />}

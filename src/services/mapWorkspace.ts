@@ -54,6 +54,7 @@ interface ApiCleaner {
   preferred_property_ids: string[];
   max_jobs_per_day: number | null;
   telegram_status: string;
+  calendar_status: "not_connected" | "connected" | "access_error";
   unavailable_dates: string[];
 }
 
@@ -289,6 +290,7 @@ export function mapWorkspace(bundle: ApiBundle): Workspace {
     preferredPropertyIds: cleaner.preferred_property_ids,
     maxJobsPerDay: cleaner.max_jobs_per_day ?? undefined,
     telegramState: telegramState(cleaner, bundle.inviteUrls[cleaner.id]),
+    calendarState: cleaner.calendar_status ?? "not_connected",
     invitationToken: bundle.inviteUrls[cleaner.id],
     unavailableDates: cleaner.unavailable_dates ?? [],
   }));

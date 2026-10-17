@@ -59,6 +59,7 @@ function blankCleaner(propertyIds: string[] = []): Cleaner {
     preferredPropertyIds: propertyIds.slice(0, 1),
     maxJobsPerDay: undefined,
     telegramState: "not_connected",
+    calendarState: "not_connected",
     unavailableDates: [],
   };
 }
@@ -281,7 +282,7 @@ export function OnboardingPage() {
           <section className="mt-8">
             <h1 className="text-2xl font-semibold tracking-tight">Your operations, ready to review.</h1>
             <p className="mt-2 max-w-2xl text-sm text-muted">
-              Signed in as {host?.email}. Confirming setup saves these properties and cleaners, syncs calendars, and builds today's plan for review. Cleaners are not messaged yet.
+              Signed in as {host?.email}. Confirming setup saves these properties and cleaners, syncs calendars, and builds today's plan for review. Each cleaner receives a welcome email with an optional Google Calendar connection link; planning can proceed with configured hours if they skip it.
             </p>
             <div className="mt-6 space-y-3">
               {properties.map((property) => (

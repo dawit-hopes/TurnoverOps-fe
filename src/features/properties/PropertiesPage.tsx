@@ -70,7 +70,6 @@ export function PropertiesPage() {
               ) : (
                 <p className="mt-3 text-sm text-muted">No upcoming cleaning task.</p>
               )}
-              {property.calendarState === "connected" && !property.icalUrl ? <p className="mt-2 text-xs text-muted">Sample reservations are stored on the server.</p> : null}
               {property.calendarState === "connected" && property.icalUrl ? <p className="mt-2 text-xs text-muted">Calendar feed synced. The full URL stays hidden.</p> : null}
               {warnings.length > 0 ? <ul className="mt-3 list-disc pl-5 text-sm text-danger">{warnings.map((warning) => <li key={warning}>{warning}</li>)}</ul> : null}
               <div className="mt-4 flex flex-wrap gap-2">

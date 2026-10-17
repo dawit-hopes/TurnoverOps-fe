@@ -1,4 +1,3 @@
-import { demoFeed } from "../data/demoFeed";
 import type { CleanerInput, DispatchMode, PlanningRun, PropertyInput, WindowInput } from "../domain/types";
 import { parseTimeToMinutes, zonedIso } from "../domain/format";
 import { fetchAll, request } from "./http";
@@ -30,6 +29,22 @@ export interface ManagerAlert {
 export interface ScheduleDecision {
   candidates: ScheduleCandidate[];
   managerAlert: ManagerAlert | null;
+}
+
+export interface CleanerRejectionDetails {
+  can_decline: boolean;
+  title: string;
+  detail: string;
+  property_name?: string;
+  scheduled_start?: string;
+  scheduled_end?: string;
+  timezone?: string;
+}
+
+export interface CleanerRejectionResult {
+  title: string;
+  detail: string;
+  can_decline: boolean;
 }
 
 export async function fetchMe() {
@@ -331,6 +346,14 @@ export async function evaluateTask(taskId: string): Promise<ScheduleDecision> {
   return { candidates: decision.candidates, managerAlert: decision.manager_alert };
 }
 
+export function getCleanerRejection(token: string) {
+  return request<CleanerRejectionDetails>(`/public/rejections/${encodeURIComponent(token)}`);
+}
+
+export function rejectCleanerAssignment(token: string) {
+  return request<CleanerRejectionResult>(`/public/rejections/${encodeURIComponent(token)}`, { method: "POST" });
+}
+
 export async function connectCalendar() {
   const result = await request<{ authorization_url: string }>("/integrations/google-calendar/connect", { method: "POST" });
   window.location.assign(result.authorization_url);
@@ -341,16 +364,4 @@ export async function finishCalendarConnect(code: string, state: string) {
     method: "POST",
     body: JSON.stringify({ code, state }),
   });
-}
-
-export async function importSample(propertyId: string | null, timeZone: string) {
-  let target = propertyId;
-  if (!target) {
-    const created = await request<{ id: string }>("/properties", {
-      method: "POST",
-      body: JSON.stringify({ name: "Sample property", timezone: timeZone, feed_kind: "none" }),
-    });
-    target = created.id;
-  }
-  await syncProperty(target, demoFeed.reservations);
 }

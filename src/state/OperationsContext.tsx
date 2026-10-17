@@ -14,7 +14,6 @@ import {
   deactivateProperty,
   evaluateTask,
   fetchMe,
-  importSample,
   loadWorkspace,
   patchExactWindow,
   patchTaskWindow,
@@ -47,7 +46,6 @@ interface OperationsContextValue {
   closePanels: () => void;
   signInWithGoogle: (idToken: string) => Promise<void>;
   signOut: () => void;
-  loadSample: () => Promise<void>;
   finishOnboarding: (properties: Property[], cleaners: Cleaner[]) => Promise<void>;
   confirmConfiguration: () => Promise<PlanningRun>;
   approvePlan: (dispatchMode: DispatchMode) => Promise<void>;
@@ -200,10 +198,6 @@ export function OperationsProvider({ children }: { children: ReactNode }) {
       setNotice(null);
       setSelectedTaskId(null);
       setSelectedConflictId(null);
-    },
-    loadSample: async () => {
-      const propertyId = workspaceRef.current?.properties.find((property) => !property.icalUrl)?.id ?? null;
-      await run(() => importSample(propertyId, timeZone()), "Sample reservations imported.");
     },
     finishOnboarding: async (properties, cleaners) => {
       const settings = await request<{ timezone: string }>("/settings");

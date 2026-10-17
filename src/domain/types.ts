@@ -69,6 +69,7 @@ export interface Cleaner {
   preferredPropertyIds: string[];
   maxJobsPerDay?: number;
   telegramState: TelegramConnectionState;
+  calendarState: "not_connected" | "connected" | "access_error";
   invitationToken?: string;
   unavailableDates: string[];
 }
@@ -315,11 +316,6 @@ export interface ActionResult {
   openTaskId?: string;
   openConflictId?: string;
 }
-
-export const DEMO_HOST: HostProfile = {
-  name: "Marta Bekele",
-  email: "marta.bekele@gmail.com",
-};
 
 export const DEFAULT_SETTINGS: Settings = {
   timeZone: "Africa/Addis_Ababa",

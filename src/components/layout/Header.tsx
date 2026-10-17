@@ -7,7 +7,7 @@ import { Menu, MenuItem } from "../ui/Menu";
 
 export function Header({ title, subtitle, onMenu }: { title: string; subtitle: string; onMenu: () => void }) {
   const navigate = useNavigate();
-  const { workspace, host, attention, openConflict, openTask, loadSample, signOut } = useOps();
+  const { workspace, host, attention, openConflict, openTask, signOut } = useOps();
   const timeZone = workspace?.settings.timeZone ?? "Africa/Addis_Ababa";
   const today = formatFullDate(new Date().toISOString(), timeZone);
 
@@ -73,15 +73,6 @@ export function Header({ title, subtitle, onMenu }: { title: string; subtitle: s
                 <p className="text-sm font-medium">{host?.name}</p>
                 <p className="text-xs text-muted">{host?.email}</p>
               </div>
-              <MenuItem
-                onClick={() => {
-                  void loadSample();
-                  close();
-                  navigate("/overview");
-                }}
-              >
-                Load sample reservations
-              </MenuItem>
               <MenuItem
                 onClick={() => {
                   signOut();
