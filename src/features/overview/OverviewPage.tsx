@@ -68,7 +68,7 @@ export function OverviewPage() {
         )}
       </section>
 
-      <PlanningPanel onFinished={() => void refreshWorkspace()} />
+      <PlanningPanel onFinished={refreshWorkspace} />
 
       <section>
         <h2 className="mb-3 text-sm font-semibold">Today's cleaning schedule</h2>
@@ -127,7 +127,7 @@ export function OverviewPage() {
   );
 }
 
-function PlanningPanel({ onFinished }: { onFinished: () => void }) {
+function PlanningPanel({ onFinished }: { onFinished: () => Promise<void> }) {
   const { workspace } = useOps();
   const timeZone = workspace?.settings.timeZone ?? "UTC";
   const logRef = useRef<HTMLDivElement>(null);
@@ -175,7 +175,7 @@ function PlanningPanel({ onFinished }: { onFinished: () => void }) {
         }
         setRun(next);
         if (next.status === "completed" || next.status === "partial") setLastSuccessful(next);
-        if (next.status !== "running") onFinished();
+        if (next.status !== "running") void onFinished();
       }).catch(() => undefined);
     }, 700);
     return () => window.clearInterval(timer);
@@ -234,7 +234,7 @@ function PlanningPanel({ onFinished }: { onFinished: () => void }) {
       }
       setRun(next);
       if (next.status === "completed" || next.status === "partial") setLastSuccessful(next);
-      onFinished();
+      await onFinished();
     } catch (reason) {
       window.clearInterval(poll);
       setRun(null);

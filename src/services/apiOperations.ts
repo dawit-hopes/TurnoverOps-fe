@@ -78,7 +78,6 @@ export async function createProperty(input: PropertyInput, timeZone: string) {
     method: "POST",
     body: JSON.stringify({
       name: input.name.trim(),
-      address: input.address?.trim() || null,
       timezone: timeZone,
       default_checkout_time: timeValue(input.checkoutTime),
       default_checkin_time: timeValue(input.checkInTime),
@@ -93,7 +92,6 @@ export async function createProperty(input: PropertyInput, timeZone: string) {
 export async function updateProperty(propertyId: string, input: PropertyInput, replaceUrl: boolean) {
   const body: Record<string, unknown> = {
     name: input.name.trim(),
-    address: input.address?.trim() || null,
     default_checkout_time: timeValue(input.checkoutTime),
     default_checkin_time: timeValue(input.checkInTime),
     cleaning_duration_minutes: input.cleaningDurationMinutes,
@@ -225,7 +223,6 @@ export async function completeOnboarding(properties: Array<PropertyInput & { id:
       method: "POST",
       body: JSON.stringify({
         name: property.name.trim(),
-        address: property.address?.trim() || null,
         timezone: timeZone,
         default_checkout_time: timeValue(property.checkoutTime),
         default_checkin_time: timeValue(property.checkInTime),
@@ -324,28 +321,6 @@ export async function retryAssignmentEmail(taskId: string) {
 
 export async function resolveTask(taskId: string) {
   await request(`/tasks/${taskId}/resolve`, { method: "POST" });
-}
-
-export async function acceptAssignment(assignmentId: string) {
-  await request(`/assignments/${assignmentId}/accept`, { method: "POST" });
-}
-
-export async function declineAssignment(assignmentId: string) {
-  await request(`/assignments/${assignmentId}/decline`, {
-    method: "POST",
-    body: JSON.stringify({ reason: "Recorded by the host" }),
-  });
-}
-
-export async function markUnavailable(taskId: string) {
-  await request(`/tasks/${taskId}/unavailable`, { method: "POST" });
-}
-
-export async function shiftBooking(taskId: string) {
-  await request(`/tasks/${taskId}/booking-shift`, {
-    method: "POST",
-    body: JSON.stringify({ days: 1 }),
-  });
 }
 
 export async function evaluateTask(taskId: string): Promise<ScheduleDecision> {

@@ -31,7 +31,6 @@ export interface HostMe {
 interface ApiProperty {
   id: string;
   name: string;
-  address: string | null;
   timezone: string;
   default_checkout_time: string;
   default_checkin_time: string;
@@ -269,7 +268,6 @@ export function mapWorkspace(bundle: ApiBundle): Workspace {
   const properties: Property[] = bundle.properties.map((property) => ({
     id: property.id,
     name: property.name,
-    address: property.address ?? "",
     icalUrl: property.ical_url ?? "",
     checkoutTime: clock(property.default_checkout_time),
     checkInTime: clock(property.default_checkin_time),

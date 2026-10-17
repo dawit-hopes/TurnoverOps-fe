@@ -54,3 +54,12 @@ textarea {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
 }
+
+@keyframes progress {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(360%);
+  }
+}

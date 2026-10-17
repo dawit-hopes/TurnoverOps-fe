@@ -4,7 +4,6 @@ import { useOps } from "../../state/OperationsContext";
 import { StatusBadge } from "../ui/Badge";
 import { Drawer } from "../ui/Drawer";
 import { AssignmentMailStatus, DecisionPanel } from "./DecisionPanel";
-import { SimulateMenu } from "./SimulateMenu";
 
 export function TaskDrawer() {
   const { workspace, selectedTaskId, closePanels, retryCleanerEmail } = useOps();
@@ -19,9 +18,6 @@ export function TaskDrawer() {
     return (
       <Drawer title={property?.name ?? "Cleaning"} onClose={closePanels}>
         <DecisionPanel taskId={task.id} onLater={closePanels} />
-        <div className="mt-6 flex justify-end">
-          <SimulateMenu taskId={task.id} />
-        </div>
       </Drawer>
     );
   }
@@ -56,9 +52,6 @@ export function TaskDrawer() {
             </ol>
           )}
         </details>
-        <div className="flex justify-end">
-          <SimulateMenu taskId={task.id} />
-        </div>
       </div>
     </Drawer>
   );

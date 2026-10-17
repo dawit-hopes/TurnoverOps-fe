@@ -41,7 +41,6 @@ export function PropertiesPage() {
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <h2 className="text-base font-semibold">{property.name}</h2>
-                  <p className="mt-1 text-sm text-muted">{property.address || "No address yet"}</p>
                   <p className="mt-1 text-sm text-muted">{maskIcalUrl(property.icalUrl)}</p>
                 </div>
                 <CalendarBadge state={property.calendarState} />
@@ -115,10 +114,9 @@ function PropertyDialog({
 }: {
   property: Property | null;
   onClose: () => void;
-  onSave: (input: { name: string; address: string; icalUrl: string; checkoutTime: string; checkInTime: string; cleaningDurationMinutes: number }, replaceUrl: boolean) => Promise<void>;
+  onSave: (input: { name: string; icalUrl: string; checkoutTime: string; checkInTime: string; cleaningDurationMinutes: number }, replaceUrl: boolean) => Promise<void>;
 }) {
   const [name, setName] = useState(property?.name ?? "");
-  const [address, setAddress] = useState(property?.address ?? "");
   const [replaceUrl, setReplaceUrl] = useState(!property);
   const [icalUrl, setIcalUrl] = useState(property ? "" : "");
   const [checkoutTime, setCheckoutTime] = useState(property?.checkoutTime ?? "10:00");
@@ -133,8 +131,8 @@ function PropertyDialog({
         className="space-y-3"
         onSubmit={(event) => {
           event.preventDefault();
-          if (!name.trim() || !address.trim()) {
-            setError("Enter a property name and full address.");
+          if (!name.trim()) {
+            setError("Enter a property name.");
             return;
           }
           if ((replaceUrl || !property) && icalUrl.trim() && !icalUrl.trim().startsWith("https://")) {
@@ -145,7 +143,6 @@ function PropertyDialog({
           void onSave(
             {
               name,
-              address,
               icalUrl: replaceUrl || !property ? icalUrl : property.icalUrl,
               checkoutTime,
               checkInTime,
@@ -156,7 +153,6 @@ function PropertyDialog({
         }}
       >
         <Field label="Name" htmlFor="property-name"><TextInput id="property-name" value={name} onChange={(event) => setName(event.target.value)} /></Field>
-        <Field label="Full address" htmlFor="property-address"><TextInput id="property-address" value={address} onChange={(event) => setAddress(event.target.value)} placeholder="12 Bole Road, Addis Ababa" /></Field>
         {property && !replaceUrl ? (
           <div>
             <p className="text-sm font-medium">Calendar URL</p>

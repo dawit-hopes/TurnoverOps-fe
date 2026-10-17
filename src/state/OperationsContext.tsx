@@ -1,8 +1,7 @@
-import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { deriveAttention } from "../domain/attention";
 import type { AttentionItem, Cleaner, CleanerInput, DispatchMode, HostProfile, PlanningRun, Property, PropertyInput, Settings, WindowInput, Workspace } from "../domain/types";
 import {
-  acceptAssignment,
   assignTask,
   approvePlan as postApprovePlan,
   completeOnboarding,
@@ -13,12 +12,10 @@ import {
   createProperty,
   deactivateCleaner,
   deactivateProperty,
-  declineAssignment,
   evaluateTask,
   fetchMe,
   importSample,
   loadWorkspace,
-  markUnavailable,
   patchExactWindow,
   patchTaskWindow,
   resolveTask,
@@ -26,7 +23,6 @@ import {
   retryTask,
   revokeInvites,
   saveSettings as putSettings,
-  shiftBooking,
   signInWithIdToken,
   syncProperty,
   updateCleaner,
@@ -72,10 +68,6 @@ interface OperationsContextValue {
   markResolved: (conflictId: string) => void;
   retryAssignment: (taskId: string) => void;
   retryCleanerEmail: (taskId: string) => Promise<string | null>;
-  simulateBookingChange: (taskId: string) => void;
-  simulateAccept: (taskId: string) => void;
-  simulateDecline: (taskId: string) => void;
-  simulateUnavailable: (taskId: string) => void;
   evaluateTask: (taskId: string) => Promise<ScheduleDecision>;
   connectGoogleCalendar: () => Promise<void>;
 }
@@ -96,6 +88,10 @@ export function OperationsProvider({ children }: { children: ReactNode }) {
   const [notice, setNotice] = useState<string | null>(null);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [selectedConflictId, setSelectedConflictId] = useState<string | null>(null);
+  const openTask = useCallback((id: string) => {
+    setSelectedConflictId(null);
+    setSelectedTaskId(id);
+  }, []);
   const hostRef = useRef<HostProfile | null>(null);
   const workspaceRef = useRef<Workspace | null>(null);
   const invitesRef = useRef<Record<string, string>>({});
@@ -118,6 +114,14 @@ export function OperationsProvider({ children }: { children: ReactNode }) {
     applyWorkspace(next);
     return next;
   };
+
+  const refreshWorkspace = useCallback(async () => {
+    const profile = hostRef.current;
+    if (!profile) return;
+    const next = await loadWorkspace(profile, invitesRef.current, syncingRef.current);
+    workspaceRef.current = next;
+    setWorkspace(next);
+  }, []);
 
   useEffect(() => {
     if (!authToken()) {
@@ -169,10 +173,7 @@ export function OperationsProvider({ children }: { children: ReactNode }) {
     dismissNotice: () => setNotice(null),
     selectedTaskId,
     selectedConflictId,
-    openTask: (id) => {
-      setSelectedConflictId(null);
-      setSelectedTaskId(id);
-    },
+    openTask,
     openConflict: (id) => {
       setSelectedTaskId(null);
       setSelectedConflictId(id);
@@ -215,9 +216,7 @@ export function OperationsProvider({ children }: { children: ReactNode }) {
       await postApprovePlan(dispatchMode);
       await reload();
     },
-    refreshWorkspace: async () => {
-      await reload();
-    },
+    refreshWorkspace,
     retrySync: async (propertyId) => {
       syncingRef.current = [...syncingRef.current, propertyId];
       if (hostRef.current) await reload();
@@ -269,28 +268,6 @@ export function OperationsProvider({ children }: { children: ReactNode }) {
       void run(() => retryTask(taskId), "Assignment retried.");
     },
     retryCleanerEmail: (taskId) => run(() => retryAssignmentEmail(taskId), "Assignment email retried."),
-    simulateBookingChange: (taskId) => {
-      void run(() => shiftBooking(taskId), "Booking shifted by one day and synced.");
-    },
-    simulateAccept: (taskId) => {
-      const assignmentId = workspaceRef.current?.tasks.find((task) => task.id === taskId)?.assignmentId;
-      if (!assignmentId) {
-        setNotice("There is no assignment waiting for confirmation.");
-        return;
-      }
-      void run(() => acceptAssignment(assignmentId), "Acceptance recorded.");
-    },
-    simulateDecline: (taskId) => {
-      const assignmentId = workspaceRef.current?.tasks.find((task) => task.id === taskId)?.assignmentId;
-      if (!assignmentId) {
-        setNotice("There is no assignment waiting for confirmation.");
-        return;
-      }
-      void run(() => declineAssignment(assignmentId), "Decline recorded.");
-    },
-    simulateUnavailable: (taskId) => {
-      void run(() => markUnavailable(taskId), "Cleaner marked unavailable for that day.");
-    },
     evaluateTask,
     connectGoogleCalendar: async () => {
       try {

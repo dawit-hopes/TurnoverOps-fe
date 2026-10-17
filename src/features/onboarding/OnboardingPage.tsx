@@ -38,7 +38,6 @@ function blankProperty(): Property {
   return {
     id: uid("prop"),
     name: "",
-    address: "",
     icalUrl: "",
     checkoutTime: "10:00",
     checkInTime: "15:00",
@@ -98,7 +97,6 @@ export function OnboardingPage() {
     if (properties.length === 0) nextErrors.form = "Add at least one property.";
     for (const property of properties) {
       if (!property.name.trim()) nextErrors[`${property.id}:name`] = "Enter a property name.";
-      if (!property.address.trim()) nextErrors[`${property.id}:address`] = "Enter the full street address.";
       if (property.checkoutTime >= property.checkInTime) nextErrors[`${property.id}:time`] = "Checkout must be earlier than check-in.";
       if (property.icalUrl.trim()) {
         const urlError = validateIcalUrl(property.icalUrl);
@@ -107,7 +105,7 @@ export function OnboardingPage() {
     }
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
-    setProperties((current) => current.map((property) => ({ ...property, name: property.name.trim(), address: property.address.trim(), icalUrl: property.icalUrl.trim() })));
+    setProperties((current) => current.map((property) => ({ ...property, name: property.name.trim(), icalUrl: property.icalUrl.trim() })));
     setStep(1);
   }
 
@@ -185,9 +183,7 @@ export function OnboardingPage() {
                     <Field label="Property name" htmlFor={`${property.id}-name`} error={errors[`${property.id}:name`]}>
                       <TextInput id={`${property.id}-name`} placeholder="Bole Apartment 1" value={property.name} onChange={(event) => updateProperty(property.id, { name: event.target.value })} />
                     </Field>
-                    <Field label="Full address" htmlFor={`${property.id}-address`} error={errors[`${property.id}:address`]}>
-                      <TextInput id={`${property.id}-address`} placeholder="12 Bole Road, Addis Ababa" value={property.address} onChange={(event) => updateProperty(property.id, { address: event.target.value })} />
-                    </Field>
+                   
                     <Field label="iCal calendar URL" htmlFor={`${property.id}-url`} hint="Optional. A URL is downloaded when you finish setup." error={errors[`${property.id}:url`]}>
                       <TextInput
                         id={`${property.id}-url`}
@@ -291,7 +287,6 @@ export function OnboardingPage() {
               {properties.map((property) => (
                 <article key={property.id} className="rounded-lg border border-line bg-white p-4">
                   <h2 className="text-sm font-semibold">{property.name || "Untitled property"}</h2>
-                  <p className="mt-1 text-sm text-muted">{property.address}</p>
                   <p className="mt-1 text-sm text-muted">
                     Checkout {formatClock(property.checkoutTime)} · Check-in {formatClock(property.checkInTime)} · {property.icalUrl || "No calendar URL"}
                   </p>
@@ -323,11 +318,11 @@ export function OnboardingPage() {
                 onClick={() => {
                   setBusy(true);
                   setPlanError("");
+                  setStep(3);
                   void finishOnboarding(properties, cleaners)
                     .then(() => confirmConfiguration())
                     .then((next) => {
                       setPlan(next);
-                      setStep(3);
                     })
                     .catch((error: unknown) => {
                       setErrors({ form: error instanceof Error ? error.message : "Setup could not be saved." });
@@ -345,7 +340,24 @@ export function OnboardingPage() {
           <section className="mt-8">
             <h1 className="text-2xl font-semibold tracking-tight">Review today's plan.</h1>
             <p className="mt-2 max-w-2xl text-sm text-muted">This plan is saved for review. Cleaners have not been messaged. Retry if a calendar or the planner failed.</p>
-            {plan ? <PlanSummary plan={plan} /> : <p className="mt-4 text-sm text-muted">No plan has been returned yet.</p>}
+            {busy ? (
+              <div className="mt-6 max-w-2xl rounded-lg border border-line bg-white p-5" role="status" aria-live="polite">
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <p className="text-sm font-semibold">Building today's assignments</p>
+                    <p className="mt-1 text-sm text-muted">Checking calendars and matching cleaners to each turnover.</p>
+                  </div>
+                  <span className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-accent" aria-hidden="true" />
+                </div>
+                <div className="mt-5 h-2 overflow-hidden rounded-full bg-accent-soft" aria-hidden="true">
+                  <div className="h-full w-1/3 animate-[progress_1.4s_ease-in-out_infinite] rounded-full bg-accent" />
+                </div>
+              </div>
+            ) : plan ? (
+              <PlanSummary plan={plan} />
+            ) : (
+              <p className="mt-4 text-sm text-muted">No plan has been returned yet.</p>
+            )}
             {planError || errors.form ? <p className="mt-3 text-sm text-danger">{planError || errors.form}</p> : null}
             <div className="mt-8 flex gap-2">
               <Button

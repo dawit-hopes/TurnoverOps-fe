@@ -47,7 +47,6 @@ export interface HostProfile {
 export interface Property {
   id: string;
   name: string;
-  address: string;
   icalUrl: string;
   checkoutTime: string;
   checkInTime: string;
@@ -267,7 +266,6 @@ export interface PlanningRun {
 
 export interface PropertyInput {
   name: string;
-  address?: string;
   icalUrl: string;
   checkoutTime: string;
   checkInTime: string;

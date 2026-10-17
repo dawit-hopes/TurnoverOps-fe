@@ -1,4 +1,5 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+import { useEffect } from "react";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { AppShell } from "../components/layout/AppShell";
 import { ActivityPage } from "../features/activity/ActivityPage";
 import { GoogleCalendarCallback } from "../features/auth/GoogleCalendarCallback";
@@ -25,7 +26,12 @@ function HomeRedirect() {
 }
 
 export function App() {
-  const { ready, host, onboardingComplete, planApproved } = useOps();
+  const { ready, host, onboardingComplete, planApproved, openTask } = useOps();
+  const location = useLocation();
+  const taskId = new URLSearchParams(location.search).get("task");
+  useEffect(() => {
+    if (taskId) openTask(taskId);
+  }, [taskId, openTask]);
   if (!ready) return <Loading />;
   const dashboardReady = onboardingComplete && planApproved;
 
@@ -41,6 +47,7 @@ export function App() {
         element={!host ? <Navigate to="/sign-in" replace /> : dashboardReady ? <Navigate to="/overview" replace /> : <OnboardingPage />}
       />
       <Route element={host && dashboardReady ? <AppShell /> : <HomeRedirect />}>
+        <Route path="/" element={<OverviewPage />} />
         <Route path="/overview" element={<OverviewPage />} />
         <Route path="/calendar" element={<CalendarPage />} />
         <Route path="/tasks" element={<TasksPage />} />

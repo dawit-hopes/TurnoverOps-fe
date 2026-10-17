@@ -1,14 +1,12 @@
 import { Bell, Menu as MenuIcon } from "lucide-react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { formatFullDate, initials } from "../../domain/format";
 import type { AttentionItem } from "../../domain/types";
 import { useOps } from "../../state/OperationsContext";
 import { Menu, MenuItem } from "../ui/Menu";
-import { SimulateMenu } from "../tasks/SimulateMenu";
 
 export function Header({ title, subtitle, onMenu }: { title: string; subtitle: string; onMenu: () => void }) {
   const navigate = useNavigate();
-  const location = useLocation();
   const { workspace, host, attention, openConflict, openTask, loadSample, signOut } = useOps();
   const timeZone = workspace?.settings.timeZone ?? "Africa/Addis_Ababa";
   const today = formatFullDate(new Date().toISOString(), timeZone);
@@ -32,7 +30,6 @@ export function Header({ title, subtitle, onMenu }: { title: string; subtitle: s
           </div>
           <p className="truncate text-sm text-muted">{subtitle}</p>
         </div>
-        {location.pathname === "/overview" ? <SimulateMenu /> : null}
         <Menu
           label={
             <button type="button" className="relative rounded-md p-2 hover:bg-zinc-100" aria-label={attention.length ? `Notifications, ${attention.length} unresolved` : "Notifications"}>
