@@ -12,8 +12,6 @@ import type {
   Reservation,
   Settings,
   TaskAutomation,
-  TelegramConnectionState,
-  TelegramMessage,
   Weekday,
   Workspace,
 } from "../domain/types";
@@ -46,14 +44,11 @@ interface ApiCleaner {
   id: string;
   name: string;
   email: string | null;
-  telegram_username: string | null;
-  telegram_user_id: string | null;
   working_days: number[];
   work_start: string;
   work_end: string;
   preferred_property_ids: string[];
   max_jobs_per_day: number | null;
-  telegram_status: string;
   calendar_status: "not_connected" | "connected" | "access_error";
   unavailable_dates: string[];
 }
@@ -146,7 +141,6 @@ interface ApiSettings {
 }
 
 export interface ApiIntegrations {
-  telegram: { configured: boolean };
   google_calendar: { configured: boolean; connected: boolean };
 }
 
@@ -159,7 +153,6 @@ export interface ApiBundle {
   notifications: ApiNotification[];
   settings: ApiSettings;
   integrations: ApiIntegrations;
-  inviteUrls: Record<string, string>;
   syncingIds: string[];
   host: { name: string; email: string };
 }
@@ -193,12 +186,6 @@ function calendarState(property: ApiProperty, syncingIds: string[]): CalendarCon
   if (syncingIds.includes(property.id)) return "syncing";
   if (property.sync_status === "error") return "failed";
   if ((property.feed_kind === "ical" || property.feed_kind === "demo") && property.sync_status === "ok") return "connected";
-  return "not_connected";
-}
-
-function telegramState(cleaner: ApiCleaner, inviteUrl?: string): TelegramConnectionState {
-  if (cleaner.telegram_status === "connected" || cleaner.telegram_user_id) return "connected";
-  if (cleaner.telegram_status === "pending" || inviteUrl) return "invitation_pending";
   return "not_connected";
 }
 
@@ -240,7 +227,7 @@ function activityType(eventType: string): ActivityType {
   if (eventType === "assignment_accepted") return "confirmation";
   if (eventType === "assignment_declined" || eventType === "assignment_expired") return "decline";
   if (eventType.includes("notification")) return "notification";
-  if (eventType.includes("sync") || eventType.startsWith("integration") || eventType.startsWith("invite") || eventType === "telegram_connected") return "sync";
+  if (eventType.includes("sync") || eventType.startsWith("integration")) return "sync";
   if (eventType === "issue_resolved" || eventType === "cleaner_unavailable") return "host_override";
   if (eventType === "host_intervention_required" || eventType === "recovery_exhausted" || eventType === "delay_reported") return "escalation";
   if (eventType === "conflict_detected") return "auto_reassignment";
@@ -283,15 +270,12 @@ export function mapWorkspace(bundle: ApiBundle): Workspace {
     id: cleaner.id,
     name: cleaner.name,
     email: cleaner.email ?? "",
-    telegramUsername: cleaner.telegram_username ?? undefined,
     workingDays: weekdaysFromApi(cleaner.working_days),
     startTime: clock(cleaner.work_start),
     endTime: clock(cleaner.work_end),
     preferredPropertyIds: cleaner.preferred_property_ids,
     maxJobsPerDay: cleaner.max_jobs_per_day ?? undefined,
-    telegramState: telegramState(cleaner, bundle.inviteUrls[cleaner.id]),
     calendarState: cleaner.calendar_status ?? "not_connected",
-    invitationToken: bundle.inviteUrls[cleaner.id],
     unavailableDates: cleaner.unavailable_dates ?? [],
   }));
   const reservations: Reservation[] = bundle.reservations.map((reservation) => ({
@@ -318,7 +302,6 @@ export function mapWorkspace(bundle: ApiBundle): Workspace {
     allowFastPath: bundle.settings.allow_fast_path ?? true,
     configurationConfirmedAt: bundle.settings.configuration_confirmed_at ?? null,
     planApprovedAt: bundle.settings.plan_approved_at ?? null,
-    telegramBotConnected: bundle.integrations.telegram.configured,
     googleCalendarConnected: bundle.integrations.google_calendar.connected,
   };
   const propertyByTask = new Map(bundle.tasks.map((task) => [task.id, task.property_id]));
@@ -356,15 +339,6 @@ export function mapWorkspace(bundle: ApiBundle): Workspace {
       summary: event.reason,
       reason: event.reason,
     }));
-    const messages: TelegramMessage[] = notes.map((note) => ({
-      id: note.id,
-      at: note.created_at,
-      direction: "outbound",
-      cleanerId: note.recipient_id,
-      body: note.body,
-      simulated: note.status === "simulated" || note.channel === "simulated",
-      delivered: note.status === "sent",
-    }));
     const problem = task.status === "at_risk" || task.status === "unassigned" || task.status === "blocked";
     const automation: TaskAutomation = {
       reassignment: task.assignment && task.assignment.attempt_number > 1 ? "completed" : problem ? "not_possible" : "none",
@@ -386,7 +360,6 @@ export function mapWorkspace(bundle: ApiBundle): Workspace {
       automation,
       declinedCleanerIds,
       assignmentHistory,
-      messages,
       note: task.conflict_details?.summary,
       brief: task.conflict_details?.brief || (task.conflict_details?.summary ? plainBrief(task.conflict_details.summary) : undefined),
       feedWindowStart: task.feed_window_start,

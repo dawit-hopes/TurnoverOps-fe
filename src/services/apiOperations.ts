@@ -58,7 +58,7 @@ export async function signInWithIdToken(idToken: string) {
   });
 }
 
-export async function loadWorkspace(host: { name: string; email: string }, inviteUrls: Record<string, string>, syncingIds: string[]) {
+export async function loadWorkspace(host: { name: string; email: string }, syncingIds: string[]) {
   const [properties, cleaners, reservations, tasks, activity, notifications, settings, integrations] = await Promise.all([
     fetchAll<ApiBundle["properties"][number]>("/properties?active=true"),
     fetchAll<ApiBundle["cleaners"][number]>("/cleaners?active=true"),
@@ -78,7 +78,6 @@ export async function loadWorkspace(host: { name: string; email: string }, invit
     notifications,
     settings,
     integrations,
-    inviteUrls,
     syncingIds,
     host,
   });
@@ -150,7 +149,6 @@ function cleanerBody(input: CleanerInput, timeZone: string) {
   return {
     name: input.name.trim(),
     email: input.email.trim(),
-    telegram_username: input.telegramUsername?.replace(/^@/, "").trim() || null,
     timezone: timeZone,
     working_days: weekdaysToApi(input.workingDays),
     work_start: timeValue(input.startTime),
@@ -163,14 +161,6 @@ function cleanerBody(input: CleanerInput, timeZone: string) {
 
 export async function deactivateCleaner(cleanerId: string) {
   await request(`/cleaners/${cleanerId}/deactivate`, { method: "POST" });
-}
-
-export async function createInvite(cleanerId: string) {
-  return request<{ invite_url: string; expires_at: string }>(`/cleaners/${cleanerId}/invites`, { method: "POST" });
-}
-
-export async function revokeInvites(cleanerId: string) {
-  await request(`/cleaners/${cleanerId}/invites/revoke`, { method: "POST" });
 }
 
 export async function saveSettings(settings: {

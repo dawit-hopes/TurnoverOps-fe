@@ -46,12 +46,6 @@ export const CALENDAR_LABEL = {
   failed: "Connection failed",
 } as const;
 
-export const TELEGRAM_LABEL = {
-  not_connected: "Not connected",
-  invitation_pending: "Invitation pending",
-  connected: "Connected",
-} as const;
-
 export const DURATION_OPTIONS = [
   { value: 60, label: "1 hour" },
   { value: 90, label: "1.5 hours" },

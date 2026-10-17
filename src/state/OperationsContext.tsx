@@ -8,7 +8,6 @@ import {
   confirmConfiguration,
   connectCalendar,
   createCleaner,
-  createInvite,
   createProperty,
   deactivateCleaner,
   deactivateProperty,
@@ -20,7 +19,6 @@ import {
   resolveTask,
   retryAssignmentEmail,
   retryTask,
-  revokeInvites,
   saveSettings as putSettings,
   signInWithIdToken,
   syncProperty,
@@ -57,8 +55,6 @@ interface OperationsContextValue {
   addCleaner: (input: CleanerInput) => Promise<boolean>;
   updateCleaner: (cleanerId: string, input: CleanerInput) => Promise<boolean>;
   removeCleaner: (cleanerId: string) => void;
-  generateInvitation: (cleanerId: string) => void;
-  revokeInvitation: (cleanerId: string) => void;
   saveSettings: (settings: Settings) => void;
   changeWindow: (taskId: string, input: WindowInput) => Promise<string | null>;
   saveCleaningWindow: (taskId: string, startIso: string, endIso: string, durationMinutes: number) => Promise<string | null>;
@@ -92,7 +88,6 @@ export function OperationsProvider({ children }: { children: ReactNode }) {
   }, []);
   const hostRef = useRef<HostProfile | null>(null);
   const workspaceRef = useRef<Workspace | null>(null);
-  const invitesRef = useRef<Record<string, string>>({});
   const syncingRef = useRef<string[]>([]);
 
   const applyHost = (next: HostProfile | null, complete: boolean) => {
@@ -108,7 +103,7 @@ export function OperationsProvider({ children }: { children: ReactNode }) {
 
   const reload = async (profile = hostRef.current) => {
     if (!profile) return null;
-    const next = await loadWorkspace(profile, invitesRef.current, syncingRef.current);
+    const next = await loadWorkspace(profile, syncingRef.current);
     applyWorkspace(next);
     return next;
   };
@@ -116,7 +111,7 @@ export function OperationsProvider({ children }: { children: ReactNode }) {
   const refreshWorkspace = useCallback(async () => {
     const profile = hostRef.current;
     if (!profile) return;
-    const next = await loadWorkspace(profile, invitesRef.current, syncingRef.current);
+    const next = await loadWorkspace(profile, syncingRef.current);
     workspaceRef.current = next;
     setWorkspace(next);
   }, []);
@@ -192,7 +187,6 @@ export function OperationsProvider({ children }: { children: ReactNode }) {
     },
     signOut: () => {
       clearAuthToken();
-      invitesRef.current = {};
       applyHost(null, false);
       applyWorkspace(null);
       setNotice(null);
@@ -233,20 +227,6 @@ export function OperationsProvider({ children }: { children: ReactNode }) {
     updateCleaner: (cleanerId, input) => ok(() => updateCleaner(cleanerId, input, timeZone()), "Cleaner updated."),
     removeCleaner: (cleanerId) => {
       void run(() => deactivateCleaner(cleanerId), "Cleaner removed.");
-    },
-    generateInvitation: (cleanerId) => {
-      void run(async () => {
-        const invite = await createInvite(cleanerId);
-        invitesRef.current = { ...invitesRef.current, [cleanerId]: invite.invite_url };
-      }, "Invitation link created.");
-    },
-    revokeInvitation: (cleanerId) => {
-      void run(async () => {
-        await revokeInvites(cleanerId);
-        const next = { ...invitesRef.current };
-        delete next[cleanerId];
-        invitesRef.current = next;
-      }, "Invitation revoked.");
     },
     saveSettings: (settings) => {
       void run(() => putSettings(settings), "Settings saved.");

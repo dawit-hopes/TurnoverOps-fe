@@ -21,7 +21,7 @@ const pages: Record<string, { title: string; subtitle: string }> = {
   },
   "/cleaners": {
     title: "Cleaners",
-    subtitle: "Availability, workload, and Telegram connection.",
+    subtitle: "Availability and workload.",
   },
   "/properties": {
     title: "Properties",

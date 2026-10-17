@@ -52,13 +52,11 @@ function blankCleaner(propertyIds: string[] = []): Cleaner {
     id: uid("cln"),
     name: "",
     email: "",
-    telegramUsername: "",
     workingDays: ["mon", "tue", "wed", "thu", "fri", "sat"],
     startTime: "08:00",
     endTime: "17:00",
     preferredPropertyIds: propertyIds.slice(0, 1),
     maxJobsPerDay: undefined,
-    telegramState: "not_connected",
     calendarState: "not_connected",
     unavailableDates: [],
   };

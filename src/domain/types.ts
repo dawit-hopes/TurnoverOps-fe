@@ -11,8 +11,6 @@ export type ConfirmationState = "none" | "pending" | "accepted" | "declined" | "
 
 export type CalendarConnectionState = "not_connected" | "syncing" | "connected" | "failed";
 
-export type TelegramConnectionState = "not_connected" | "invitation_pending" | "connected";
-
 export type Weekday = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
 
 export type ActivityType =
@@ -62,15 +60,12 @@ export interface Cleaner {
   id: string;
   name: string;
   email: string;
-  telegramUsername?: string;
   workingDays: Weekday[];
   startTime: string;
   endTime: string;
   preferredPropertyIds: string[];
   maxJobsPerDay?: number;
-  telegramState: TelegramConnectionState;
   calendarState: "not_connected" | "connected" | "access_error";
-  invitationToken?: string;
   unavailableDates: string[];
 }
 
@@ -105,16 +100,6 @@ export interface AssignmentEvent {
   reason?: string;
 }
 
-export interface TelegramMessage {
-  id: string;
-  at: string;
-  direction: "outbound" | "inbound";
-  cleanerId: string;
-  body: string;
-  simulated: boolean;
-  delivered: boolean;
-}
-
 export interface CandidateExclusion {
   cleanerId: string;
   reason: string;
@@ -141,7 +126,6 @@ export interface CleaningTask {
   automation: TaskAutomation;
   declinedCleanerIds: string[];
   assignmentHistory: AssignmentEvent[];
-  messages: TelegramMessage[];
   note?: string;
   brief?: string;
   feedWindowStart?: string;
@@ -221,7 +205,6 @@ export interface Settings {
   allowFastPath: boolean;
   configurationConfirmedAt: string | null;
   planApprovedAt: string | null;
-  telegramBotConnected: boolean;
   googleCalendarConnected: boolean;
 }
 
@@ -276,7 +259,6 @@ export interface PropertyInput {
 export interface CleanerInput {
   name: string;
   email: string;
-  telegramUsername?: string;
   workingDays: Weekday[];
   startTime: string;
   endTime: string;
@@ -333,7 +315,6 @@ export const DEFAULT_SETTINGS: Settings = {
   allowFastPath: true,
   configurationConfirmedAt: null,
   planApprovedAt: null,
-  telegramBotConnected: false,
   googleCalendarConnected: false,
 };
 

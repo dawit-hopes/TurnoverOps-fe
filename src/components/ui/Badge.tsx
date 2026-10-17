@@ -1,6 +1,6 @@
 import { cn } from "../../domain/format";
-import { CALENDAR_LABEL, CONFIRMATION_LABEL, OUTCOME_LABEL, TASK_STATUS_LABEL, TELEGRAM_LABEL } from "../../domain/labels";
-import type { ActivityOutcome, CalendarConnectionState, ConfirmationState, TaskStatus, TelegramConnectionState } from "../../domain/types";
+import { CALENDAR_LABEL, CONFIRMATION_LABEL, OUTCOME_LABEL, TASK_STATUS_LABEL } from "../../domain/labels";
+import type { ActivityOutcome, CalendarConnectionState, ConfirmationState, TaskStatus } from "../../domain/types";
 
 const taskClass: Record<TaskStatus, string> = {
   unassigned: "bg-zinc-100 text-zinc-700",
@@ -42,16 +42,6 @@ export function CalendarBadge({ state }: { state: CalendarConnectionState }) {
           ? "bg-accent-soft text-accent"
           : "bg-zinc-100 text-zinc-700";
   return <span className={cn("inline-flex rounded-full px-2 py-0.5 text-xs font-medium", className)}>{CALENDAR_LABEL[state]}</span>;
-}
-
-export function TelegramBadge({ state }: { state: TelegramConnectionState }) {
-  const className =
-    state === "connected"
-      ? "bg-success-soft text-success"
-      : state === "invitation_pending"
-        ? "bg-warning-soft text-warning"
-        : "bg-zinc-100 text-zinc-700";
-  return <span className={cn("inline-flex rounded-full px-2 py-0.5 text-xs font-medium", className)}>{TELEGRAM_LABEL[state]}</span>;
 }
 
 export function ConfirmationText({ value }: { value: ConfirmationState }) {
