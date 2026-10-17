@@ -19,7 +19,7 @@ export function WeekdayPicker({
             aria-pressed={selected}
             onClick={() => onChange(selected ? value.filter((item) => item !== day) : [...value, day])}
             className={cn(
-              "h-8 min-w-10 rounded-md border px-2 text-xs font-medium",
+              "h-8 min-w-10 cursor-pointer rounded-md border px-2 text-xs font-medium",
               selected ? "border-accent bg-accent-soft text-accent" : "border-line bg-white text-muted",
             )}
           >

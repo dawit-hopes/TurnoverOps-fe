@@ -137,7 +137,7 @@ export function OnboardingPage() {
           <Logo />
           <button
             type="button"
-            className="text-sm text-muted"
+            className="cursor-pointer text-sm text-muted"
             onClick={() => {
               signOut();
               navigate("/sign-in");
@@ -155,7 +155,7 @@ export function OnboardingPage() {
               aria-label={index < step ? `Back to ${label}` : `${label}, step ${index + 1}`}
               disabled={index > step}
               onClick={() => index < step && setStep(index)}
-              className={`h-1.5 rounded-full ${index <= step ? "bg-accent" : "bg-zinc-200"}`}
+              className={`h-1.5 cursor-pointer rounded-full ${index <= step ? "bg-accent" : "bg-zinc-200"}`}
             />
           ))}
         </div>
@@ -172,7 +172,7 @@ export function OnboardingPage() {
                     <div className="flex items-center gap-2">
                       <CalendarBadge state={property.calendarState} />
                       {properties.length > 1 ? (
-                        <button type="button" className="inline-flex items-center gap-1 text-sm text-muted" onClick={() => setProperties((current) => current.filter((item) => item.id !== property.id))}>
+                        <button type="button" className="inline-flex cursor-pointer items-center gap-1 text-sm text-muted" onClick={() => setProperties((current) => current.filter((item) => item.id !== property.id))}>
                           <Trash2 size={14} /> Remove
                         </button>
                       ) : null}
@@ -205,7 +205,7 @@ export function OnboardingPage() {
                 </article>
               ))}
             </div>
-            <button type="button" className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-accent" onClick={() => setProperties((current) => [...current, blankProperty()])}>
+            <button type="button" className="mt-4 inline-flex cursor-pointer items-center gap-1 text-sm font-medium text-accent" onClick={() => setProperties((current) => [...current, blankProperty()])}>
               <Plus size={16} /> Add another property
             </button>
             {errors.form ? <p className="mt-3 text-sm text-danger">{errors.form}</p> : null}
@@ -225,7 +225,7 @@ export function OnboardingPage() {
                   <div className="mb-3 flex items-center justify-between">
                     <h2 className="text-sm font-semibold">Cleaner {index + 1}</h2>
                     {cleaners.length > 1 ? (
-                      <button type="button" className="inline-flex items-center gap-1 text-sm text-muted" onClick={() => setCleaners((current) => current.filter((item) => item.id !== cleaner.id))}>
+                      <button type="button" className="inline-flex cursor-pointer items-center gap-1 text-sm text-muted" onClick={() => setCleaners((current) => current.filter((item) => item.id !== cleaner.id))}>
                         <Trash2 size={14} /> Remove
                       </button>
                     ) : null}
@@ -251,7 +251,7 @@ export function OnboardingPage() {
                         {properties.map((property) => {
                           const selected = cleaner.preferredPropertyIds.includes(property.id);
                           return (
-                            <button key={property.id} type="button" aria-pressed={selected} className={`rounded-md border px-2 py-1 text-xs ${selected ? "border-accent bg-accent-soft text-accent" : "border-line"}`} onClick={() => updateCleaner(cleaner.id, { preferredPropertyIds: selected ? cleaner.preferredPropertyIds.filter((id) => id !== property.id) : [...cleaner.preferredPropertyIds, property.id] })}>
+                            <button key={property.id} type="button" aria-pressed={selected} className={`cursor-pointer rounded-md border px-2 py-1 text-xs ${selected ? "border-accent bg-accent-soft text-accent" : "border-line"}`} onClick={() => updateCleaner(cleaner.id, { preferredPropertyIds: selected ? cleaner.preferredPropertyIds.filter((id) => id !== property.id) : [...cleaner.preferredPropertyIds, property.id] })}>
                               {property.name || "Untitled property"}
                             </button>
                           );
@@ -265,7 +265,7 @@ export function OnboardingPage() {
                 </article>
               ))}
             </div>
-            <button type="button" className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-accent" onClick={() => setCleaners((current) => [...current, blankCleaner(properties.map((property) => property.id))])}>
+            <button type="button" className="mt-4 inline-flex cursor-pointer items-center gap-1 text-sm font-medium text-accent" onClick={() => setCleaners((current) => [...current, blankCleaner(properties.map((property) => property.id))])}>
               <Plus size={16} /> Add another cleaner
             </button>
             {errors.cleaners ? <p className="mt-3 text-sm text-danger">{errors.cleaners}</p> : null}
@@ -383,12 +383,12 @@ export function OnboardingPage() {
             <h1 className="text-2xl font-semibold tracking-tight">How should assignments go out?</h1>
             <p className="mt-2 max-w-2xl text-sm text-muted">Review only keeps the plan on your dashboard. Automatic emails cleaners for this approved plan and for later daily runs.</p>
             <fieldset className="mt-6 space-y-3">
-              <label className="flex items-start gap-3 rounded-lg border border-line bg-white p-4 text-sm">
-                <input type="radio" name="dispatch" checked={dispatchMode === "review_only"} onChange={() => setDispatchMode("review_only")} />
+              <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-line bg-white p-4 text-sm">
+                <input className="cursor-pointer" type="radio" name="dispatch" checked={dispatchMode === "review_only"} onChange={() => setDispatchMode("review_only")} />
                 <span><span className="font-medium">Review only</span><span className="mt-1 block text-muted">Save assignments and leave them undispatched.</span></span>
               </label>
-              <label className="flex items-start gap-3 rounded-lg border border-line bg-white p-4 text-sm">
-                <input type="radio" name="dispatch" checked={dispatchMode === "automatic"} onChange={() => setDispatchMode("automatic")} />
+              <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-line bg-white p-4 text-sm">
+                <input className="cursor-pointer" type="radio" name="dispatch" checked={dispatchMode === "automatic"} onChange={() => setDispatchMode("automatic")} />
                 <span><span className="font-medium">Automatic</span><span className="mt-1 block text-muted">Message cleaners now if notifications are on, and enable the daily job.</span></span>
               </label>
             </fieldset>

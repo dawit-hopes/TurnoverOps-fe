@@ -33,7 +33,7 @@ export function TextInput({ className, ...props }: InputHTMLAttributes<HTMLInput
 
 export function SelectInput({ className, children, ...props }: SelectHTMLAttributes<HTMLSelectElement>) {
   return (
-    <select className={cn(controlClass, className)} {...props}>
+    <select className={cn(controlClass, "cursor-pointer", className)} {...props}>
       {children}
     </select>
   );
